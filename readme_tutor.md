@@ -13,7 +13,7 @@ Plataforma digital de acompañamiento académico y autoevaluación para estudian
 ### 1. Clonar el repositorio
 
 ```bash
-git clone https://github.com/TU_USUARIO/utec-acompanamiento.git
+git clone https://github.com/EliasUsaqui-tech/proyecto-pi3.git
 cd utec-acompanamiento
 ```
 
