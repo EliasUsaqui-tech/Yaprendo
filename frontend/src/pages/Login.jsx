@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import loginBg from "../assets/uni2.avif";
+import loginBg from "../assets/utecCampus.jpg";
 
 export default function Login() {
   const [email, setEmail] = useState("");
