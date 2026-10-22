@@ -9,7 +9,8 @@ const generateToken = (id) =>
 // @route   POST /api/auth/register
 export const register = async (req, res, next) => {
   try {
-    const { name, email, password, cycle, role } = req.body;
+    // 1. Recibimos también 'bio' y 'expertise' del frontend
+    const { name, email, password, cycle, role, bio, expertise } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Faltan campos obligatorios" });
@@ -20,7 +21,19 @@ export const register = async (req, res, next) => {
       return res.status(400).json({ message: "El correo ya está registrado" });
     }
 
-    const user = await User.create({ name, email, password, cycle, role });
+    // 2. Si es mentor y no envían ciclo, le ponemos uno por defecto (5)
+    const userCycle = role === "mentor" ? (cycle || "5") : cycle;
+
+    // 3. Creamos el usuario guardando los campos extra si es mentor
+    const user = await User.create({ 
+      name, 
+      email, 
+      password, 
+      cycle: userCycle, 
+      role: role || "student",
+      bio: role === "mentor" ? bio : "",
+      expertise: role === "mentor" ? expertise : []
+    });
 
     res.status(201).json({
       _id: user._id,
@@ -28,6 +41,8 @@ export const register = async (req, res, next) => {
       email: user.email,
       cycle: user.cycle,
       role: user.role,
+      bio: user.bio,              // <-- Devolvemos la bio
+      expertise: user.expertise,  // <-- Devolvemos los cursos
       token: generateToken(user._id),
     });
   } catch (error) {
@@ -51,6 +66,8 @@ export const login = async (req, res, next) => {
       email: user.email,
       cycle: user.cycle,
       role: user.role,
+      bio: user.bio,              // <-- Devolvemos la bio al hacer login
+      expertise: user.expertise,  // <-- Devolvemos los cursos al hacer login
       token: generateToken(user._id),
     });
   } catch (error) {

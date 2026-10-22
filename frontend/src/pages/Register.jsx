@@ -8,7 +8,12 @@ export default function Register() {
     email: "",
     password: "",
     cycle: "1",
+    role: "student", // <-- Por defecto es estudiante
+    bio: "",
   });
+  
+  // Estado para los checkboxes de cursos del mentor
+  const [mentorCourses, setMentorCourses] = useState([]);
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
   const { register } = useAuth();
@@ -17,12 +22,27 @@ export default function Register() {
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
+  const handleCourseToggle = (course) => {
+    if (mentorCourses.includes(course)) {
+      setMentorCourses(mentorCourses.filter((c) => c !== course));
+    } else {
+      setMentorCourses([...mentorCourses, course]);
+    }
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
+    
+    // Preparamos los datos finales para enviar al backend
+    const payload = { ...form };
+    if (form.role === "mentor") {
+      payload.expertise = mentorCourses;
+    }
+
     try {
-      await register(form);
+      await register(payload);
       navigate("/dashboard");
     } catch (err) {
       setError(err.response?.data?.message || "Error al registrarse");
@@ -31,9 +51,12 @@ export default function Register() {
     }
   };
 
+  const isMentor = form.role === "mentor";
+  const availableCourses = ["Cálculo 1", "Física 1", "Fundamentos del Cálculo"];
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4">
-      <div className="card w-full max-w-md">
+    <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4 py-10">
+      <div className="card w-full max-w-md bg-slate-900 border-slate-800">
         <h1 className="text-2xl font-bold text-blue-400 mb-6">
           Crear cuenta
         </h1>
@@ -45,8 +68,31 @@ export default function Register() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
+          {/* SELECTOR DE ROL */}
+          <div className="flex gap-4 p-1 bg-slate-800 rounded-lg">
+            <button
+              type="button"
+              onClick={() => setForm({ ...form, role: "student" })}
+              className={`flex-1 py-2 rounded-md text-sm font-medium transition ${
+                !isMentor ? "bg-blue-600 text-white" : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Soy Estudiante
+            </button>
+            <button
+              type="button"
+              onClick={() => setForm({ ...form, role: "mentor" })}
+              className={`flex-1 py-2 rounded-md text-sm font-medium transition ${
+                isMentor ? "bg-emerald-600 text-white" : "text-slate-400 hover:text-white"
+              }`}
+            >
+              Soy Mentor
+            </button>
+          </div>
+
+          {/* CAMPOS COMUNES */}
           <div>
-            <label className="text-sm font-medium text-slate-300">Nombre</label>
+            <label className="text-sm font-medium text-slate-300">Nombre completo</label>
             <input
               name="name"
               className="input-field mt-1"
@@ -78,21 +124,71 @@ export default function Register() {
               required
             />
           </div>
-          <div>
-            <label className="text-sm font-medium text-slate-300">Ciclo</label>
-            <select
-              name="cycle"
-              className="input-field mt-1"
-              value={form.cycle}
-              onChange={handleChange}
-            >
-              {["1","2","3","4","5","6","7","8","9","10"].map((c) => (
-                <option key={c} value={c}>Ciclo {c}</option>
-              ))}
-            </select>
-          </div>
-          <button type="submit" disabled={loading} className="btn-primary w-full">
-            {loading ? "Creando..." : "Crear cuenta"}
+
+          {/* CAMPOS EXCLUSIVOS DEL ESTUDIANTE */}
+          {!isMentor && (
+            <div>
+              <label className="text-sm font-medium text-slate-300">Ciclo actual</label>
+              <select
+                name="cycle"
+                className="input-field mt-1"
+                value={form.cycle}
+                onChange={handleChange}
+              >
+                {["1","2","3","4","5"].map((c) => (
+                  <option key={c} value={c}>Ciclo {c}</option>
+                ))}
+              </select>
+            </div>
+          )}
+
+          {/* CAMPOS EXCLUSIVOS DEL MENTOR */}
+          {isMentor && (
+            <div className="space-y-4 border-t border-slate-700 pt-4 mt-2">
+              <div>
+                <label className="text-sm font-medium text-slate-300">Ciclo actual (Mínimo 5to)</label>
+                <select
+                  name="cycle"
+                  className="input-field mt-1"
+                  value={form.cycle}
+                  onChange={handleChange}
+                >
+                  {["5","6","7","8","9","10"].map((c) => (
+                    <option key={c} value={c}>Ciclo {c}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="text-sm font-medium text-slate-300">Sobre mí (breve biografía)</label>
+                <textarea
+                  name="bio"
+                  className="input-field mt-1 h-20 resize-none"
+                  placeholder="Ej: Me gusta explicar Cálculo con ejemplos prácticos."
+                  value={form.bio}
+                  onChange={handleChange}
+                />
+              </div>
+              <div>
+                <label className="text-sm font-medium text-slate-300 block mb-2">Cursos en los que puedo ayudar:</label>
+                <div className="space-y-2">
+                  {availableCourses.map((course) => (
+                    <label key={course} className="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={mentorCourses.includes(course)}
+                        onChange={() => handleCourseToggle(course)}
+                        className="rounded border-slate-700 bg-slate-900 text-emerald-600 focus:ring-emerald-500"
+                      />
+                      {course}
+                    </label>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+
+          <button type="submit" disabled={loading} className={`w-full py-2 rounded-lg font-medium text-white transition ${isMentor ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'}`}>
+            {loading ? "Creando..." : (isMentor ? "Registrarme como Mentor" : "Crear cuenta de Estudiante")}
           </button>
         </form>
 

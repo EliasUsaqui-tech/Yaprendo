@@ -24,6 +24,12 @@ const userSchema = new mongoose.Schema(
     },
     // Cursos en los que está matriculado (referencias a Course)
     enrolledCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
+    
+    // ==========================================
+    // NUEVOS CAMPOS PARA EL MENTOR
+    // ==========================================
+    bio: { type: String, default: "" },
+    expertise: [{ type: String }],
   },
   { timestamps: true }
 );

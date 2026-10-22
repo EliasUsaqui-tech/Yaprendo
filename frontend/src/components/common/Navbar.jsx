@@ -24,13 +24,28 @@ export default function Navbar() {
         <Link to="/dashboard" className="font-bold text-lg text-blue-400">
           UTEC · Acompañamiento
         </Link>
+        
         {user && (
           <div className="flex items-center gap-1">
             <Link to="/dashboard" className={linkClass("/dashboard")}>Inicio</Link>
-            <Link to="/courses" className={linkClass("/courses")}>Cursos</Link>
+
+            {/* ====== VISTAS EXCLUSIVAS DEL ESTUDIANTE ====== */}
+            {user.role === "student" && (
+              <>
+                <Link to="/courses" className={linkClass("/courses")}>Cursos</Link>
+                <Link to="/progress" className={linkClass("/progress")}>Progreso</Link>
+              </>
+            )}
+
+            {/* ====== VISTAS EXCLUSIVAS DEL MENTOR ====== */}
+            {user.role === "mentor" && (
+              <Link to="/mentor-panel" className={linkClass("/mentor-panel")}>Panel Mentor</Link>
+            )}
+
+            {/* ====== VISTAS COMPARTIDAS (Ambos roles) ====== */}
             <Link to="/techniques" className={linkClass("/techniques")}>Técnicas</Link>
-            <Link to="/mentors" className={linkClass("/mentors")}>Mentores</Link>
-            <Link to="/progress" className={linkClass("/progress")}>Progreso</Link>
+            <Link to="/mentors" className={linkClass("/mentors")}>Directorio</Link>
+
             <button
               onClick={handleLogout}
               className="ml-3 text-sm text-slate-400 hover:text-red-400"

@@ -1,9 +1,17 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 
 export default function Dashboard() {
   const { user } = useAuth();
 
+  // ==========================================
+  // REDIRECCIÓN: Si es mentor, lo enviamos a su propio panel
+  // ==========================================
+  if (user?.role === "mentor") {
+    return <Navigate to="/mentor-panel" replace />;
+  }
+
+  // A partir de aquí, el código solo se ejecuta para estudiantes
   const cards = [
     {
       to: "/courses",
@@ -45,7 +53,7 @@ export default function Dashboard() {
           <Link
             key={c.to}
             to={c.to}
-            className={`card hover:bg-slate-750 hover:shadow-md transition ${c.color}`}
+            className={`card hover:bg-slate-700 hover:shadow-md transition ${c.color}`}
           >
             <h2 className="text-lg font-semibold text-slate-100 mb-1">
               {c.title}
