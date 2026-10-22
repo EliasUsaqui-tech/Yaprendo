@@ -11,6 +11,7 @@ import Techniques from "./pages/Techniques";
 import Quiz from "./pages/Quiz";
 import Mentors from "./pages/Mentors";
 import Progress from "./pages/Progress";
+import MentorDashboard from "./pages/MentorDashboard"; 
 
 function Layout({ children }) {
   return (
@@ -29,10 +30,20 @@ export default function App() {
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          
           <Route
             path="/dashboard"
             element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>}
           />
+          
+          {/* ======================================================== */}
+          {/* RUTA NUEVA PARA EL MENTOR */}
+          <Route
+            path="/mentor-panel"
+            element={<ProtectedRoute><Layout><MentorDashboard /></Layout></ProtectedRoute>}
+          />
+          {/* ======================================================== */}
+
           <Route
             path="/courses"
             element={<ProtectedRoute><Layout><CourseSelection /></Layout></ProtectedRoute>}
