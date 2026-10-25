@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { AVATARS } from "../utils/avatars"; // <-- Importamos los avatares
+import { AVATAR_STYLES, getAvatarUrl } from "../utils/avatars"; // Importamos las nuevas funciones
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -11,7 +11,7 @@ export default function Register() {
     cycle: "1",
     role: "student",
     bio: "",
-    avatar: "avatar_1", // <-- Avatar por defecto
+    avatar: `bottts|default`, // Por defecto: estilo bottts
   });
   
   const [mentorCourses, setMentorCourses] = useState([]);
@@ -29,6 +29,13 @@ export default function Register() {
     } else {
       setMentorCourses([...mentorCourses, course]);
     }
+  };
+
+  // Manejar la selección de estilo de avatar
+  const handleAvatarSelect = (styleId) => {
+    // Usamos el nombre del usuario como semilla, si está vacío usamos "utec"
+    const seed = form.name.trim() || "utec"; 
+    setForm({ ...form, avatar: `${styleId}|${seed}` });
   };
 
   const handleSubmit = async (e) => {
@@ -53,6 +60,11 @@ export default function Register() {
 
   const isMentor = form.role === "mentor";
   const availableCourses = ["Cálculo 1", "Física 1", "Fundamentos del Cálculo"];
+  
+  // Extraemos el estilo actual para saber cuál resaltar
+  const currentStyleId = form.avatar.split("|")[0];
+  // Semilla para las previsualizaciones
+  const previewSeed = form.name.trim() || "utec";
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-slate-950 px-4 py-10">
@@ -91,25 +103,30 @@ export default function Register() {
           </div>
 
           {/* ========================================== */}
-          {/* GALERÍA DE AVATARES */}
+          {/* GALERÍA DE AVATARES (DICEBEAR) */}
           {/* ========================================== */}
           <div className="border-t border-slate-700 pt-4 mt-2">
             <label className="text-sm font-medium text-slate-300 block mb-3">
-              Elige tu avatar:
+              Elige el estilo de tu avatar:
             </label>
             <div className="flex flex-wrap gap-3 justify-center">
-              {AVATARS.map((av) => (
+              {AVATAR_STYLES.map((style) => (
                 <button
-                  key={av.id}
+                  key={style.id}
                   type="button"
-                  onClick={() => setForm({ ...form, avatar: av.id })}
-                  className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl transition-all ${
-                    form.avatar === av.id
-                      ? "ring-4 ring-blue-500 scale-110"
-                      : "opacity-60 hover:opacity-100 hover:scale-105"
-                  } ${av.bg}`}
+                  onClick={() => handleAvatarSelect(style.id)}
+                  className={`w-14 h-14 rounded-full overflow-hidden border-2 transition-all ${
+                    currentStyleId === style.id
+                      ? "border-blue-500 scale-110 shadow-lg"
+                      : "border-transparent opacity-60 hover:opacity-100 hover:scale-105"
+                  }`}
+                  title={style.name}
                 >
-                  {av.emoji}
+                  <img 
+                    src={getAvatarUrl(style.id, previewSeed)} 
+                    alt={style.name} 
+                    className="w-full h-full object-cover bg-slate-800"
+                  />
                 </button>
               ))}
             </div>

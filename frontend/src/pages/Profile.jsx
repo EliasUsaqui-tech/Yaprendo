@@ -1,35 +1,55 @@
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import api from "../services/api";
-import { AVATARS } from "../utils/avatars"; // Asegúrate de haber creado este archivo
+import { AVATAR_STYLES, getAvatarUrl } from "../utils/avatars";
 
 export default function Profile() {
   const { user, setUser } = useAuth();
   
-  // Estados locales para el formulario
+  // Separamos el estilo y la semilla (ej. "bottts|Leonardo")
+  const initialAvatar = user?.avatar || "bottts|utec";
+  const [initialStyle, initialSeed] = initialAvatar.split("|");
+
   const [name, setName] = useState(user?.name || "");
   const [bio, setBio] = useState(user?.bio || "");
-  const [avatar, setAvatar] = useState(user?.avatar || "avatar_1"); // Avatar por defecto
+  
+  const [avatarStyle, setAvatarStyle] = useState(initialStyle || "bottts");
+  const [seed, setSeed] = useState(initialSeed || user?.name || "utec");
   
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
+
+  // Función para generar un nuevo avatar aleatorio (cambia la semilla)
+  const generateNewVariation = () => {
+    const newSeed = Math.random().toString(36).substring(7);
+    setSeed(newSeed);
+  };
+
+  // Función para cambiar de estilo (y mantener la semilla o el nombre)
+  const handleStyleChange = (styleId) => {
+    setAvatarStyle(styleId);
+    if (seed === user?.name) {
+      // Si la semilla era su nombre, la mantenemos
+      setSeed(user?.name); 
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage({ text: "", type: "" });
 
+    // Combinamos estilo y semilla para guardar en la BD
+    const avatarString = `${avatarStyle}|${seed}`;
+
     try {
-      // Enviamos los datos al backend (asegúrate de tener la ruta PUT /api/auth/profile)
       const { data } = await api.put("/auth/profile", {
         name,
         bio,
-        avatar,
+        avatar: avatarString,
       });
 
-      // Actualizamos el contexto global para que el Navbar y otras vistas se enteren
       setUser(data); 
-      
       setMessage({ text: "Perfil actualizado con éxito ✅", type: "success" });
     } catch (error) {
       console.error(error);
@@ -39,13 +59,15 @@ export default function Profile() {
     }
   };
 
+  // Previsualización en tiempo real
+  const previewUrl = getAvatarUrl(avatarStyle, seed);
+
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
       <h1 className="text-2xl font-bold text-slate-100 mb-6">
         Configuración de Perfil
       </h1>
       
-      {/* Mensajes de éxito o error */}
       {message.text && (
         <div className={`p-3 rounded-lg mb-4 text-center border ${
           message.type === "success" 
@@ -58,24 +80,45 @@ export default function Profile() {
 
       <form onSubmit={handleSubmit} className="card bg-slate-900 border-slate-800 space-y-6">
         
-        {/* ====== GALERÍA DE AVATARES ====== */}
+        {/* ====== AVATAR Y GENERADOR ====== */}
         <div className="flex flex-col items-center pb-6 border-b border-slate-800">
-          <h3 className="text-sm font-medium text-slate-300 mb-4">
-            Elige tu avatar
+          
+          {/* Avatar Grande */}
+          <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-blue-500 mb-6 shadow-xl bg-slate-800">
+            <img src={previewUrl} alt="Avatar" className="w-full h-full object-cover" />
+          </div>
+
+          {/* Botón de Generar Variación */}
+          <button 
+            type="button" 
+            onClick={generateNewVariation}
+            className="mb-6 text-sm bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-white transition flex items-center gap-2 border border-slate-700"
+          >
+            🔄 Generar otra variación
+          </button>
+
+          {/* Galería de Estilos */}
+          <h3 className="text-sm font-medium text-slate-400 mb-3">
+            O cambia el estilo:
           </h3>
-          <div className="flex flex-wrap gap-4 justify-center">
-            {AVATARS.map((av) => (
+          <div className="flex flex-wrap gap-3 justify-center">
+            {AVATAR_STYLES.map((style) => (
               <button
-                key={av.id}
+                key={style.id}
                 type="button"
-                onClick={() => setAvatar(av.id)}
-                className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl transition-all ${
-                  avatar === av.id
-                    ? "ring-4 ring-blue-500 scale-110 shadow-lg"
-                    : "opacity-60 hover:opacity-100 hover:scale-105"
-                } ${av.bg}`}
+                onClick={() => handleStyleChange(style.id)}
+                className={`w-12 h-12 rounded-full overflow-hidden border-2 transition-all ${
+                  avatarStyle === style.id 
+                    ? "border-blue-500 scale-110 shadow-lg" 
+                    : "border-transparent opacity-60 hover:opacity-100"
+                }`}
+                title={style.name}
               >
-                {av.emoji}
+                <img 
+                  src={getAvatarUrl(style.id, seed)} 
+                  alt={style.name} 
+                  className="w-full h-full object-cover bg-slate-800" 
+                />
               </button>
             ))}
           </div>
@@ -101,11 +144,9 @@ export default function Profile() {
               className="input-field mt-1 opacity-50 cursor-not-allowed"
               value={user?.email || ""}
               disabled
-              title="El correo no se puede cambiar"
             />
           </div>
 
-          {/* Solo mostramos la biografía si el usuario es Mentor */}
           {user?.role === "mentor" && (
             <div>
               <label className="text-sm font-medium text-slate-300">
