@@ -1,23 +1,26 @@
 import { useAuth } from "../hooks/useAuth";
 import { Link } from "react-router-dom";
-import { getAvatarUrl } from "../utils/avatars"; // <-- Importamos la nueva función
+import { getAvatarUrl } from "../utils/avatars";
 
 export default function MentorDashboard() {
   const { user } = useAuth();
 
-  // Separamos el estilo y la semilla (ej. "bottts|Leonardo")
-  const initialAvatar = user?.avatar || "bottts|utec";
-  const [avatarStyle, avatarSeed] = initialAvatar.split("|");
+  // Separamos las 4 partes del avatar: estilo | semilla | color | accesorios
+  const avatarParts = (user?.avatar || "bottts|utec||").split("|");
+  const style = avatarParts[0] || "bottts";
+  const seed = avatarParts[1] || user?.name || "utec";
+  const bgColor = avatarParts[2] || "";
+  const accessories = avatarParts[3] || "";
 
   // Generamos la URL del avatar
-  const avatarUrl = getAvatarUrl(avatarStyle || "bottts", avatarSeed || user?.name || "utec");
+  const avatarUrl = getAvatarUrl(style, seed, bgColor, accessories);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header del Mentor */}
       <div className="flex items-center gap-4 mb-8">
         
-        {/* AHORA MOSTRAMOS EL AVATAR DE DICEBEAR */}
+        {/* AVATAR DEL MENTOR */}
         <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg border-2 border-emerald-500 bg-slate-800 shrink-0">
           <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
         </div>

@@ -9,12 +9,9 @@ export default function Dashboard() {
     return <Navigate to="/mentor-panel" replace />;
   }
 
-  // Separamos el estilo y la semilla
   const initialAvatar = user?.avatar || "bottts|utec";
-  const [avatarStyle, avatarSeed] = initialAvatar.split("|");
-
-  // Generamos la URL
-  const avatarUrl = getAvatarUrl(avatarStyle || "bottts", avatarSeed || user?.name || "utec");
+  const [avatarStyle, avatarSeed, bgColor, accessories] = initialAvatar.split("|");
+  const avatarUrl = getAvatarUrl(avatarStyle, avatarSeed, bgColor || "", accessories || "");
 
   const cards = [
     {

@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { mentorService } from "../services/mentorService";
-import { getAvatarUrl } from "../utils/avatars"; // <-- NUEVA IMPORTACIÓN
+import { getAvatarUrl } from "../utils/avatars"; 
 import Loader from "../components/common/Loader";
 
 export default function Mentors() {
@@ -33,10 +33,14 @@ export default function Mentors() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {mentors.map((m) => {
-            // Separamos el estilo y la semilla del mentor
-            const initialAvatar = m.avatar || "bottts|utec";
-            const [avatarStyle, avatarSeed] = initialAvatar.split("|");
-            const avatarUrl = getAvatarUrl(avatarStyle || "bottts", avatarSeed || m.name || "utec");
+            // Separamos las 4 partes: estilo | semilla | color | accesorios
+            const avatarParts = (m.avatar || "bottts|utec||").split("|");
+            const style = avatarParts[0] || "bottts";
+            const seed = avatarParts[1] || m.name || "utec";
+            const bgColor = avatarParts[2] || "";
+            const accessories = avatarParts[3] || "";
+            
+            const avatarUrl = getAvatarUrl(style, seed, bgColor, accessories);
 
             return (
               <div key={m._id} className="card flex flex-col justify-between">
