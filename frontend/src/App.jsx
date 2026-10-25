@@ -17,6 +17,7 @@ import ForgotPassword from "./pages/ForgotPassword";
 // NUEVOS IMPORTS PARA EL TEST
 import StudyTest from "./pages/StudyTest";
 import Recommendation from "./pages/Recommendation";
+import TopicDetail from "./pages/TopicDetail";
 
 function Layout({ children }) {
   return (
@@ -36,6 +37,10 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route
+            path="/topics/:id"
+            element={<ProtectedRoute><Layout><TopicDetail /></Layout></ProtectedRoute>}
+          />
           
           <Route
             path="/dashboard"

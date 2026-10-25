@@ -41,29 +41,43 @@ export default function CourseDetail() {
       </h1>
       <p className="text-slate-400 mb-6">{course.description}</p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        
+        {/* ====== LISTA DE TEMAS (CLICABLES) ====== */}
         <div className="card">
-          <h2 className="font-semibold text-slate-100 mb-3">
+          <h2 className="font-semibold text-slate-100 mb-4 flex items-center gap-2">
             📖 Temas del curso
           </h2>
           <ul className="space-y-2">
             {topics.map((t) => (
-              <li
-                key={t._id}
-                className="border border-slate-700 rounded-lg p-3 text-sm"
-              >
-                <span className="font-medium text-slate-200">{t.name}</span>
-                {t.description && (
-                  <p className="text-slate-400 text-xs mt-1">{t.description}</p>
-                )}
+              <li key={t._id}>
+                <Link
+                  to={`/topics/${t._id}`}
+                  className="block border border-slate-700 rounded-lg p-4 text-sm hover:bg-slate-800 hover:border-slate-500 transition group"
+                >
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <span className="font-medium text-slate-200 group-hover:text-white transition">
+                        {t.name}
+                      </span>
+                      {t.description && (
+                        <p className="text-slate-400 text-xs mt-1 line-clamp-1">
+                          {t.description}
+                        </p>
+                      )}
+                    </div>
+                    <span className="text-slate-500 group-hover:text-slate-300">→</span>
+                  </div>
+                </Link>
               </li>
             ))}
           </ul>
         </div>
 
-        <div className="card">
-          <h2 className="font-semibold text-slate-100 mb-3">
-            📝 Autoevaluaciones
+        {/* ====== AUTOEVALUACIONES DEL CURSO ====== */}
+        <div className="card h-fit">
+          <h2 className="font-semibold text-slate-100 mb-4 flex items-center gap-2">
+            📝 Autoevaluaciones disponibles
           </h2>
           {quizzes.length === 0 ? (
             <p className="text-sm text-slate-400">
@@ -74,17 +88,17 @@ export default function CourseDetail() {
               {quizzes.map((q) => (
                 <li
                   key={q._id}
-                  className="border border-slate-700 rounded-lg p-3 flex justify-between items-center"
+                  className="border border-slate-700 rounded-lg p-3 flex justify-between items-center bg-slate-800/50"
                 >
                   <div>
-                    <p className="font-medium text-sm text-slate-100">
+                    <p className="font-medium text-sm text-slate-200">
                       {q.title}
                     </p>
-                    <p className="text-xs text-slate-400">
+                    <p className="text-xs text-slate-400 mt-1">
                       {q.estimatedMinutes} min · {q.difficulty}
                     </p>
                   </div>
-                  <Link to={`/quiz/${q._id}`} className="btn-primary text-xs">
+                  <Link to={`/quiz/${q._id}`} className="btn-primary text-xs py-1.5 px-3">
                     Empezar
                   </Link>
                 </li>
