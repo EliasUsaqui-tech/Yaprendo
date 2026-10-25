@@ -69,10 +69,13 @@ export default function Mentors() {
               </div>
 
               {/* Botón de contacto */}
+              {/* Botón de contacto por Gmail */}
               <div className="flex gap-2 pt-3 border-t border-slate-700">
                 <a
-                  href={`mailto:${m.email}`}
-                  className="btn-secondary text-xs w-full text-center"
+                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=${m.email}&su=Solicitud de asesoría en UTEC&body=Hola ${m.name}, soy estudiante de UTEC y necesito ayuda con el curso.`}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="btn-secondary text-xs w-full text-center flex items-center justify-center gap-2"
                 >
                   Contactar por correo
                 </a>
