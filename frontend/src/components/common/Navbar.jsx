@@ -1,5 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { AVATARS } from "../../utils/avatars"; // Importar
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -40,6 +41,12 @@ export default function Navbar() {
             {/* ====== VISTAS EXCLUSIVAS DEL MENTOR ====== */}
             {user.role === "mentor" && (
               <Link to="/mentor-panel" className={linkClass("/mentor-panel")}>Panel Mentor</Link>
+            )}
+            
+            {user.avatar && (
+              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ml-2 ${AVATARS.find(a => a.id === user.avatar)?.bg || "bg-slate-700"}`}>
+                {AVATARS.find(a => a.id === user.avatar)?.emoji || "👤"}
+              </div>
             )}
 
             {/* ====== VISTAS COMPARTIDAS (Ambos roles) ====== */}

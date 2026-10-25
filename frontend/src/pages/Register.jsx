@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { AVATARS } from "../utils/avatars";
+
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -186,6 +188,28 @@ export default function Register() {
               </div>
             </div>
           )}
+
+          <div className="border-t border-slate-700 pt-4 mt-2">
+            <label className="text-sm font-medium text-slate-300 block mb-3">
+              Elige tu avatar:
+            </label>
+            <div className="flex flex-wrap gap-3">
+              {AVATARS.map((av) => (
+                <button
+                  key={av.id}
+                  type="button"
+                  onClick={() => setForm({ ...form, avatar: av.id })}
+                  className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl transition ${
+                    form.avatar === av.id
+                      ? "ring-4 ring-blue-500 scale-110"
+                      : "opacity-60 hover:opacity-100 hover:scale-105"
+                  } ${av.bg}`}
+                >
+                  {av.emoji}
+                </button>
+              ))}
+            </div>
+          </div>
 
           <button type="submit" disabled={loading} className={`w-full py-2 rounded-lg font-medium text-white transition ${isMentor ? 'bg-emerald-600 hover:bg-emerald-700' : 'bg-blue-600 hover:bg-blue-700'}`}>
             {loading ? "Creando..." : (isMentor ? "Registrarme como Mentor" : "Crear cuenta de Estudiante")}

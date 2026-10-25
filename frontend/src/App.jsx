@@ -12,6 +12,7 @@ import Quiz from "./pages/Quiz";
 import Mentors from "./pages/Mentors";
 import Progress from "./pages/Progress";
 import MentorDashboard from "./pages/MentorDashboard"; 
+import Profile from "./pages/Profile"; // <-- 1. Importamos el nuevo perfil
 
 function Layout({ children }) {
   return (
@@ -35,14 +36,20 @@ export default function App() {
             path="/dashboard"
             element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>}
           />
-          
+
           {/* ======================================================== */}
-          {/* RUTA NUEVA PARA EL MENTOR */}
+          {/* RUTA NUEVA PARA EL PERFIL */}
+          <Route
+            path="/profile"
+            element={<ProtectedRoute><Layout><Profile /></Layout></ProtectedRoute>}
+          />
+          {/* ======================================================== */}
+          
+          {/* RUTA PARA EL MENTOR */}
           <Route
             path="/mentor-panel"
             element={<ProtectedRoute><Layout><MentorDashboard /></Layout></ProtectedRoute>}
           />
-          {/* ======================================================== */}
 
           <Route
             path="/courses"

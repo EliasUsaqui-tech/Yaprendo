@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { mentorService } from "../services/mentorService";
 import Loader from "../components/common/Loader";
+import { AVATARS } from "../utils/avatars"; // Importar
+
 
 export default function Mentors() {
   const [mentors, setMentors] = useState([]);
@@ -35,8 +37,8 @@ export default function Mentors() {
             <div key={m._id} className="card flex flex-col justify-between">
               <div>
                 <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-lg">
-                    {m.name?.charAt(0) || "?"}
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl ${AVATARS.find(a => a.id === m.avatar)?.bg || "bg-emerald-600"}`}>
+                    {AVATARS.find(a => a.id === m.avatar)?.emoji || m.name?.charAt(0)}
                   </div>
                   <div>
                     <h2 className="font-semibold text-slate-100">
