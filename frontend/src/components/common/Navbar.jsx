@@ -22,16 +22,25 @@ export default function Navbar() {
   // Buscamos el avatar del usuario, si no tiene uno, usamos el primero por defecto
   const currentAvatar = AVATARS.find((a) => a.id === user?.avatar) || AVATARS[0];
 
+  // Determinamos a dónde debe ir el logo dependiendo del rol
+  const homePath = user?.role === "mentor" ? "/mentor-panel" : "/dashboard";
+
   return (
     <nav className="bg-slate-900 border-b border-slate-800 sticky top-0 z-10">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
-        <Link to="/dashboard" className="font-bold text-lg text-blue-400">
+        
+        {/* LOGO (Redirige al panel correcto) */}
+        <Link to={homePath} className="font-bold text-lg text-blue-400 hover:text-blue-300 transition">
           UTEC · Acompañamiento
         </Link>
         
         {user && (
           <div className="flex items-center gap-1">
-            <Link to="/dashboard" className={linkClass("/dashboard")}>Inicio</Link>
+            
+            {/* BOTÓN DE INICIO (Solo visible para estudiantes) */}
+            {user.role === "student" && (
+              <Link to="/dashboard" className={linkClass("/dashboard")}>Inicio</Link>
+            )}
 
             {/* VISTAS EXCLUSIVAS DEL ESTUDIANTE */}
             {user.role === "student" && (

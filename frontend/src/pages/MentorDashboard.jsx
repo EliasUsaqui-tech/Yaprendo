@@ -1,27 +1,34 @@
 import { useAuth } from "../hooks/useAuth";
 import { Link } from "react-router-dom";
+import { AVATARS } from "../utils/avatars"; // <-- Importamos los avatares
 
 export default function MentorDashboard() {
   const { user } = useAuth();
+
+  // Buscamos el avatar del mentor, si no tiene, usamos el 1 por defecto
+  const currentAvatar = AVATARS.find((a) => a.id === user?.avatar) || AVATARS[0];
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header del Mentor */}
       <div className="flex items-center gap-4 mb-8">
-        <div className="w-16 h-16 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-2xl shadow-lg">
-          {user.name.charAt(0)}
+        
+        {/* AQUÍ CAMBIAMOS LA INICIAL POR EL AVATAR */}
+        <div className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl shadow-lg ${currentAvatar.bg}`}>
+          {currentAvatar.emoji}
         </div>
+
         <div>
           <h1 className="text-3xl font-bold text-slate-100">
             Panel del Mentor
           </h1>
           <p className="text-emerald-400">
-            Bienvenido, {user.name}. Tu experiencia es clave para los nuevos ingresos.
+            Bienvenido, {user?.name?.split(" ")[0]}. Tu experiencia es clave para los nuevos ingresos.
           </p>
         </div>
       </div>
 
-      {/* Tarjetas de Estadísticas (Mockup visual) */}
+      {/* Tarjetas de Estadísticas */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
         <div className="card border-l-4 border-emerald-500 bg-slate-800/50">
           <p className="text-slate-400 text-sm">Solicitudes pendientes</p>
@@ -34,7 +41,7 @@ export default function MentorDashboard() {
         <div className="card border-l-4 border-purple-500 bg-slate-800/50">
           <p className="text-slate-400 text-sm">Cursos que dominas</p>
           <p className="text-4xl font-bold text-slate-100 mt-2">
-            {user.expertise?.length || 0}
+            {user?.expertise?.length || 0}
           </p>
         </div>
       </div>
