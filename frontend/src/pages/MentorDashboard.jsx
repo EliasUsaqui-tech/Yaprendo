@@ -1,21 +1,25 @@
 import { useAuth } from "../hooks/useAuth";
 import { Link } from "react-router-dom";
-import { AVATARS } from "../utils/avatars"; // <-- Importamos los avatares
+import { getAvatarUrl } from "../utils/avatars"; // <-- Importamos la nueva función
 
 export default function MentorDashboard() {
   const { user } = useAuth();
 
-  // Buscamos el avatar del mentor, si no tiene, usamos el 1 por defecto
-  const currentAvatar = AVATARS.find((a) => a.id === user?.avatar) || AVATARS[0];
+  // Separamos el estilo y la semilla (ej. "bottts|Leonardo")
+  const initialAvatar = user?.avatar || "bottts|utec";
+  const [avatarStyle, avatarSeed] = initialAvatar.split("|");
+
+  // Generamos la URL del avatar
+  const avatarUrl = getAvatarUrl(avatarStyle || "bottts", avatarSeed || user?.name || "utec");
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       {/* Header del Mentor */}
       <div className="flex items-center gap-4 mb-8">
         
-        {/* AQUÍ CAMBIAMOS LA INICIAL POR EL AVATAR */}
-        <div className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl shadow-lg ${currentAvatar.bg}`}>
-          {currentAvatar.emoji}
+        {/* AHORA MOSTRAMOS EL AVATAR DE DICEBEAR */}
+        <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg border-2 border-emerald-500 bg-slate-800 shrink-0">
+          <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
         </div>
 
         <div>
