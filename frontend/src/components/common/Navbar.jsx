@@ -1,6 +1,5 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { AVATARS } from "../../utils/avatars";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -19,17 +18,14 @@ export default function Navbar() {
         : "text-slate-300 hover:bg-slate-800"
     }`;
 
-  // Buscamos el avatar del usuario, si no tiene uno, usamos el primero por defecto
-  const currentAvatar = AVATARS.find((a) => a.id === user?.avatar) || AVATARS[0];
-
-  // Determinamos a dónde debe ir el logo dependiendo del rol
+  // Redirige al panel correcto dependiendo del rol
   const homePath = user?.role === "mentor" ? "/mentor-panel" : "/dashboard";
 
   return (
     <nav className="bg-slate-900 border-b border-slate-800 sticky top-0 z-10">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         
-        {/* LOGO (Redirige al panel correcto) */}
+        {/* LOGO */}
         <Link to={homePath} className="font-bold text-lg text-blue-400 hover:text-blue-300 transition">
           UTEC · Acompañamiento
         </Link>
@@ -37,12 +33,12 @@ export default function Navbar() {
         {user && (
           <div className="flex items-center gap-1">
             
-            {/* BOTÓN DE INICIO (Solo visible para estudiantes) */}
+            {/* INICIO (Solo estudiantes) */}
             {user.role === "student" && (
               <Link to="/dashboard" className={linkClass("/dashboard")}>Inicio</Link>
             )}
 
-            {/* VISTAS EXCLUSIVAS DEL ESTUDIANTE */}
+            {/* ESTUDIANTE */}
             {user.role === "student" && (
               <>
                 <Link to="/courses" className={linkClass("/courses")}>Cursos</Link>
@@ -50,30 +46,27 @@ export default function Navbar() {
               </>
             )}
 
-            {/* VISTAS EXCLUSIVAS DEL MENTOR */}
+            {/* MENTOR */}
             {user.role === "mentor" && (
               <Link to="/mentor-panel" className={linkClass("/mentor-panel")}>Panel Mentor</Link>
             )}
 
-            {/* VISTAS COMPARTIDAS */}
+            {/* COMPARTIDOS */}
             <Link to="/techniques" className={linkClass("/techniques")}>Técnicas</Link>
             <Link to="/mentors" className={linkClass("/mentors")}>Directorio</Link>
 
-            {/* BOTÓN DE PERFIL (Avatar) */}
+            {/* BOTÓN EDITAR PERFIL (Reemplaza al avatar) */}
             <Link 
               to="/profile" 
-              title="Ir a mi perfil"
-              className="ml-3 flex items-center gap-2 hover:opacity-80 transition"
+              className="ml-3 bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-sm font-medium transition border border-slate-700"
             >
-              <div className={`w-9 h-9 rounded-full flex items-center justify-center text-lg shadow-md ${currentAvatar.bg}`}>
-                {currentAvatar.emoji}
-              </div>
+              Editar perfil
             </Link>
 
-            {/* BOTÓN DE SALIR */}
+            {/* BOTÓN SALIR */}
             <button
               onClick={handleLogout}
-              className="ml-3 text-sm text-slate-400 hover:text-red-400"
+              className="ml-2 text-sm text-slate-400 hover:text-red-400 px-2 py-1.5 transition"
             >
               Salir
             </button>

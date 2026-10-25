@@ -36,9 +36,15 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
-  // ¡Aquí está la magia! Agregamos setUser para que el perfil lo pueda usar
+  // Nueva función que actualiza el estado Y el localStorage
+  const updateUser = (newData) => {
+    localStorage.setItem("user", JSON.stringify(newData));
+    setUser(newData);
+  };
+
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, setUser }}>
+    // Exportamos updateUser en lugar del setUser original
+    <AuthContext.Provider value={{ user, loading, login, register, logout, setUser: updateUser }}>
       {children}
     </AuthContext.Provider>
   );
