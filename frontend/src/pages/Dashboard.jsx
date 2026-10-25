@@ -9,11 +9,15 @@ export default function Dashboard() {
     return <Navigate to="/mentor-panel" replace />;
   }
 
-  // Separamos las 3 partes: estilo | semilla | color
-  const avatarParts = (user?.avatar || "bottts|utec||").split("|");
-  const style = avatarParts[0] || "bottts";
-  const seed = avatarParts[1] || user?.name || "utec";
-  const bgColor = avatarParts[2] || "";
+  // Validación: Si el usuario no tiene avatar o es de formato viejo, usamos uno por defecto
+  const avatarData = user?.avatar && user.avatar.includes("|") 
+    ? user.avatar 
+    : "bottts|utec|b6e3f4"; 
+    
+  const parts = avatarData.split("|");
+  const style = parts[0] || "bottts";
+  const seed = parts[1] || user?.name || "utec";
+  const bgColor = parts[2] || "b6e3f4";
 
   const avatarUrl = getAvatarUrl(style, seed, bgColor);
 

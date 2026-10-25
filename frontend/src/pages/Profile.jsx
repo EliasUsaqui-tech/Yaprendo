@@ -6,25 +6,32 @@ import { AVATAR_STYLES, BG_COLORS, getAvatarUrl } from "../utils/avatars";
 export default function Profile() {
   const { user, setUser } = useAuth();
   
-  const initialAvatar = user?.avatar || "bottts|utec";
-  const [initialStyle, initialSeed] = initialAvatar.split("|");
+  // TRUCO: Si el usuario no tiene avatar, le asignamos uno por defecto válido
+  const initialAvatar = user?.avatar && user.avatar.includes("|") 
+    ? user.avatar 
+    : "bottts|utec|b6e3f4";
+
+  const avatarParts = initialAvatar.split("|");
+  const initialStyle = avatarParts[0] || "bottts";
+  const initialSeed = avatarParts[1] || user?.name || "utec";
+  const initialBgColor = avatarParts[2] || BG_COLORS[0].hex;
 
   const [name, setName] = useState(user?.name || "");
   const [bio, setBio] = useState(user?.bio || "");
   
-  const [avatarStyle, setAvatarStyle] = useState(initialStyle || "bottts");
-  const [bgColor, setBgColor] = useState(BG_COLORS[0].hex);
+  const [avatarStyle, setAvatarStyle] = useState(initialStyle);
+  const [seed, setSeed] = useState(initialSeed);
+  const [bgColor, setBgColor] = useState(initialBgColor);
   
-  // Diccionario que guarda un historial de variaciones por cada estilo
+  // Diccionario para guardar el historial de variaciones por estilo
   const [seeds, setSeeds] = useState(() => {
     const initialSeeds = {};
     AVATAR_STYLES.forEach(style => {
-      initialSeeds[style.id] = [initialSeed || user?.name || "utec"];
+      initialSeeds[style.id] = [initialSeed];
     });
     return initialSeeds;
   });
 
-  // Índices para saber en qué variación estamos de cada estilo
   const [currentIndex, setCurrentIndex] = useState(() => {
     const idx = {};
     AVATAR_STYLES.forEach(style => { idx[style.id] = 0; });
@@ -34,7 +41,6 @@ export default function Profile() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
 
-  // Funciones para navegar entre variaciones
   const handleNextVariation = (styleId) => {
     const newSeed = Math.random().toString(36).substring(7);
     setSeeds(prev => ({
@@ -94,12 +100,10 @@ export default function Profile() {
         
         <div className="flex flex-col items-center pb-6 border-b border-slate-800">
           
-          {/* Avatar */}
           <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-blue-500 mb-4 shadow-xl bg-slate-800">
             <img src={previewUrl} alt="Avatar" className="w-full h-full object-cover" />
           </div>
 
-          {/* Controles de Variación */}
           <div className="flex items-center gap-4 mb-6">
             <button 
               type="button" 
@@ -121,7 +125,6 @@ export default function Profile() {
             </button>
           </div>
 
-          {/* Colores de Fondo */}
           <div className="w-full mb-6">
             <label className="text-xs font-medium text-slate-400 block mb-2 text-center">Color de fondo</label>
             <div className="flex gap-2 justify-center">
@@ -140,7 +143,6 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* Galería de Estilos */}
           <h3 className="text-sm font-medium text-slate-400 mb-3">Estilos base:</h3>
           <div className="flex flex-wrap gap-3 justify-center">
             {AVATAR_STYLES.map((style) => (
