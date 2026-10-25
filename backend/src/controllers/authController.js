@@ -107,3 +107,27 @@ export const updateProfile = async (req, res, next) => {
     next(error);
   }
 };
+
+// @route   POST /api/auth/forgot-password
+export const forgotPassword = async (req, res, next) => {
+  try {
+    const { email, newPassword } = req.body;
+    
+    if (!email || !newPassword) {
+      return res.status(400).json({ message: "Faltan campos obligatorios" });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ message: "No existe un usuario con ese correo" });
+    }
+
+    // Asignamos la nueva contraseña (el modelo User la encriptará automáticamente por el pre-save)
+    user.password = newPassword;
+    await user.save();
+
+    res.json({ message: "Contraseña actualizada correctamente. Ya puedes iniciar sesión." });
+  } catch (error) {
+    next(error);
+  }
+};

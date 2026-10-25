@@ -13,6 +13,8 @@ import Mentors from "./pages/Mentors";
 import Progress from "./pages/Progress";
 import MentorDashboard from "./pages/MentorDashboard"; 
 import Profile from "./pages/Profile"; // <-- 1. Importamos el nuevo perfil
+import ForgotPassword from "./pages/ForgotPassword";
+
 
 function Layout({ children }) {
   return (
@@ -36,6 +38,7 @@ export default function App() {
             path="/dashboard"
             element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>}
           />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
 
           {/* ======================================================== */}
           {/* RUTA NUEVA PARA EL PERFIL */}

@@ -77,6 +77,12 @@ export default function Login() {
           <button type="submit" disabled={loading} className="btn-primary w-full">
             {loading ? "Ingresando..." : "Ingresar"}
           </button>
+
+          <div className="flex justify-between items-center mt-2">
+            <Link to="/forgot-password" className="text-xs text-slate-400 hover:text-blue-400 transition">
+              ¿Olvidaste tu contraseña?
+            </Link>
+          </div>
         </form>
 
         <p className="text-sm text-slate-300 mt-4 text-center">
