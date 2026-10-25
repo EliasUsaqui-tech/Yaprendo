@@ -6,35 +6,65 @@ import { AVATAR_STYLES, BG_COLORS, getAvatarUrl } from "../utils/avatars";
 export default function Profile() {
   const { user, setUser } = useAuth();
   
-  // Separamos el estilo y la semilla inicial
   const initialAvatar = user?.avatar || "bottts|utec";
   const [initialStyle, initialSeed] = initialAvatar.split("|");
 
   const [name, setName] = useState(user?.name || "");
   const [bio, setBio] = useState(user?.bio || "");
   
-  // Estados para los filtros
   const [avatarStyle, setAvatarStyle] = useState(initialStyle || "bottts");
-  const [seed, setSeed] = useState(initialSeed || user?.name || "utec");
   const [bgColor, setBgColor] = useState(BG_COLORS[0].hex);
-  const [accessories, setAccessories] = useState("");
+  
+  // Diccionario que guarda un historial de variaciones por cada estilo
+  const [seeds, setSeeds] = useState(() => {
+    const initialSeeds = {};
+    AVATAR_STYLES.forEach(style => {
+      initialSeeds[style.id] = [initialSeed || user?.name || "utec"];
+    });
+    return initialSeeds;
+  });
+
+  // Índices para saber en qué variación estamos de cada estilo
+  const [currentIndex, setCurrentIndex] = useState(() => {
+    const idx = {};
+    AVATAR_STYLES.forEach(style => { idx[style.id] = 0; });
+    return idx;
+  });
   
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
 
-  const generateNewVariation = () => {
+  // Funciones para navegar entre variaciones
+  const handleNextVariation = (styleId) => {
     const newSeed = Math.random().toString(36).substring(7);
-    setSeed(newSeed);
+    setSeeds(prev => ({
+      ...prev,
+      [styleId]: [...prev[styleId], newSeed]
+    }));
+    setCurrentIndex(prev => ({
+      ...prev,
+      [styleId]: prev[styleId] + 1
+    }));
   };
+
+  const handlePrevVariation = (styleId) => {
+    if (currentIndex[styleId] > 0) {
+      setCurrentIndex(prev => ({
+        ...prev,
+        [styleId]: prev[styleId] - 1
+      }));
+    }
+  };
+
+  const currentSeed = seeds[avatarStyle][currentIndex[avatarStyle]];
+  const canGoBack = currentIndex[avatarStyle] > 0;
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setMessage({ text: "", type: "" });
 
-    // Guardamos el estilo, la semilla y los filtros separados por "|"
-    // Formato: "bottts|semilla|bgColor|accessories"
-    const avatarString = `${avatarStyle}|${seed}|${bgColor}|${accessories}`;
+    const avatarString = `${avatarStyle}|${currentSeed}|${bgColor}`;
 
     try {
       const { data } = await api.put("/auth/profile", { name, bio, avatar: avatarString });
@@ -48,8 +78,7 @@ export default function Profile() {
     }
   };
 
-  // Previsualización con los filtros aplicados
-  const previewUrl = getAvatarUrl(avatarStyle, seed, bgColor, accessories);
+  const previewUrl = getAvatarUrl(avatarStyle, currentSeed, bgColor);
 
   return (
     <div className="max-w-2xl mx-auto px-4 py-8">
@@ -63,22 +92,37 @@ export default function Profile() {
 
       <form onSubmit={handleSubmit} className="card bg-slate-900 border-slate-800 space-y-6">
         
-        {/* ====== PREVISUALIZACIÓN DEL AVATAR ====== */}
         <div className="flex flex-col items-center pb-6 border-b border-slate-800">
+          
+          {/* Avatar */}
           <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-blue-500 mb-4 shadow-xl bg-slate-800">
             <img src={previewUrl} alt="Avatar" className="w-full h-full object-cover" />
           </div>
 
-          <button 
-            type="button" 
-            onClick={generateNewVariation}
-            className="mb-6 text-sm bg-slate-800 hover:bg-slate-700 px-4 py-2 rounded-lg text-white transition flex items-center gap-2 border border-slate-700"
-          >
-            🔄 Generar otra variación
-          </button>
+          {/* Controles de Variación */}
+          <div className="flex items-center gap-4 mb-6">
+            <button 
+              type="button" 
+              onClick={() => handlePrevVariation(avatarStyle)}
+              disabled={!canGoBack}
+              className={`w-10 h-10 flex items-center justify-center rounded-full border transition ${
+                canGoBack ? "bg-slate-800 border-slate-600 text-white hover:bg-slate-700" : "bg-slate-900 border-slate-800 text-slate-600 cursor-not-allowed"
+              }`}
+            >
+              ←
+            </button>
+            <span className="text-xs text-slate-400 font-medium">Variación {currentIndex[avatarStyle] + 1}</span>
+            <button 
+              type="button" 
+              onClick={() => handleNextVariation(avatarStyle)}
+              className="w-10 h-10 flex items-center justify-center rounded-full bg-blue-600 border border-blue-500 text-white hover:bg-blue-500 transition shadow-lg"
+            >
+              →
+            </button>
+          </div>
 
-          {/* ====== FILTROS: COLOR DE FONDO ====== */}
-          <div className="w-full mb-4">
+          {/* Colores de Fondo */}
+          <div className="w-full mb-6">
             <label className="text-xs font-medium text-slate-400 block mb-2 text-center">Color de fondo</label>
             <div className="flex gap-2 justify-center">
               {BG_COLORS.map((color) => (
@@ -96,17 +140,7 @@ export default function Profile() {
             </div>
           </div>
 
-          {/* ====== FILTROS: ACCESORIOS ====== */}
-          <div className="w-full mb-6">
-            <label className="text-xs font-medium text-slate-400 block mb-2 text-center">Accesorios</label>
-            <div className="flex gap-2 justify-center">
-              <button type="button" onClick={() => setAccessories("")} className={`px-3 py-1 rounded text-xs border ${accessories === "" ? "bg-blue-600 border-blue-500" : "border-slate-700 text-slate-400"}`}>Aleatorio</button>
-              <button type="button" onClick={() => setAccessories("glasses")} className={`px-3 py-1 rounded text-xs border ${accessories === "glasses" ? "bg-blue-600 border-blue-500" : "border-slate-700 text-slate-400"}`}>Lentes 👓</button>
-              <button type="button" onClick={() => setAccessories("none")} className={`px-3 py-1 rounded text-xs border ${accessories === "none" ? "bg-blue-600 border-blue-500" : "border-slate-700 text-slate-400"}`}>Sin accesorios</button>
-            </div>
-          </div>
-
-          {/* ====== GALERÍA DE ESTILOS ====== */}
+          {/* Galería de Estilos */}
           <h3 className="text-sm font-medium text-slate-400 mb-3">Estilos base:</h3>
           <div className="flex flex-wrap gap-3 justify-center">
             {AVATAR_STYLES.map((style) => (
@@ -119,13 +153,16 @@ export default function Profile() {
                 }`}
                 title={style.name}
               >
-                <img src={getAvatarUrl(style.id, seed, bgColor, accessories)} alt={style.name} className="w-full h-full object-cover bg-slate-800" />
+                <img 
+                  src={getAvatarUrl(style.id, seeds[style.id][currentIndex[style.id]], bgColor)} 
+                  alt={style.name} 
+                  className="w-full h-full object-cover bg-slate-800" 
+                />
               </button>
             ))}
           </div>
         </div>
 
-        {/* ====== DATOS DEL PERFIL ====== */}
         <div className="space-y-4">
           <div>
             <label className="text-sm font-medium text-slate-300">Nombre</label>
