@@ -22,38 +22,17 @@ const run = async () => {
   ]);
 
   console.log("Creando usuarios...");
-  const admin = await User.create({
-    name: "Admin UTEC",
-    email: "admin@utec.edu.pe",
-    password: "admin123",
-    cycle: "egresado",
-    role: "admin",
-  });
-
-  const alumno = await User.create({
-    name: "Leonardo Autodidacta",
-    email: "leonardo@utec.edu.pe",
-    password: "leonardo123",
-    cycle: "1",
-    role: "student",
-  });
-
-  // Aquí está la magia: Andrea ahora es un User con bio y expertise
-  const mentorUser = await User.create({
-    name: "Andrea Mentor",
-    email: "andrea@utec.edu.pe",
-    password: "andrea123",
-    cycle: "6",
-    role: "mentor",
-    bio: "Estudiante de 6to ciclo, me gusta explicar con ejemplos prácticos.",
-    expertise: ["Cálculo 1", "Física 1"],
-  });
+  await User.create([
+    { name: "Admin UTEC", email: "admin@utec.edu.pe", password: "admin123", cycle: "egresado", role: "admin" },
+    { name: "Leonardo Autodidacta", email: "leonardo@utec.edu.pe", password: "leonardo123", cycle: "1", role: "student" },
+    { name: "Andrea Mentor", email: "andrea@utec.edu.pe", password: "andrea123", cycle: "6", role: "mentor", bio: "Estudiante de 6to ciclo, me gusta explicar con ejemplos prácticos.", expertise: ["Cálculo 1", "Física 1"] }
+  ]);
 
   console.log("Creando cursos...");
   const calc1 = await Course.create({
     name: "Cálculo 1",
     code: "CAL1",
-    description: "Límites, derivadas e introducción a integrales.",
+    description: "Límites, derivadas e introducción a integrales basados en el sílabo CC1101 (Malla 2021).",
     cycle: "1",
     color: "#1e40af",
   });
@@ -66,143 +45,98 @@ const run = async () => {
     color: "#dc2626",
   });
 
-  const fundCalc = await Course.create({
-    name: "Fundamentos del Cálculo",
-    code: "FUNCAL",
-    description: "Álgebra, funciones y trigonometría base.",
-    cycle: "1",
-    color: "#059669",
-  });
+  console.log("📖 Creando las 16 semanas de Cálculo 1...");
+  
+  const semanas = [
+    { s: 1, name: "Semana 1: Funciones y Modelos", desc: "Definición, notación, dominio, rango y transformaciones geométricas." },
+    { s: 2, name: "Semana 2: Tipos de Funciones", desc: "Funciones constante, lineal, cuadrática, polinómica y potencia." },
+    { s: 3, name: "Semana 3: Funciones Especiales", desc: "Exponenciales, logarítmicas, hiperbólicas, seno y coseno." },
+    { s: 4, name: "Semana 4: Límites y Continuidad", desc: "Asíntotas, límites laterales, límites al infinito y continuidad." },
+    { s: 5, name: "Semana 5: Definición de Derivada", desc: "Tasa de cambio, pendiente de tangente y Teorema del Valor Medio." },
+    { s: 6, name: "Semana 6: Reglas de Derivación", desc: "Derivadas básicas, regla de la cadena y derivación implícita." },
+    { s: 7, name: "Semana 7: Aplicaciones de la Derivada", desc: "Optimización, crecimiento, concavidad y puntos críticos." },
+    { s: 8, name: "Semana 8: Diferenciales", desc: "Notación de Leibniz y cálculo de diferenciales." },
+    { s: 9, name: "Semana 9: Velocidades Relacionadas", desc: "Problemas de contexto real con diferenciales y antiderivadas." },
+    { s: 10, name: "Semana 10: Repaso y Problemas", desc: "Problemas integradores de funciones, derivadas y tasas de cambio." },
+    { s: 11, name: "Semana 11: Integrales Indefinidas", desc: "Sustitución, integración por partes y fracciones parciales." },
+    { s: 12, name: "Semana 12: Sumas de Riemann", desc: "Estimación de área bajo la curva mediante rectángulos." },
+    { s: 13, name: "Semana 13: Integral Definida", desc: "Teoremas fundamentales del cálculo." },
+    { s: 14, name: "Semana 14: Áreas y Valor Promedio", desc: "Cálculo de áreas entre curvas y aplicación de integrales." },
+    { s: 15, name: "Semana 15: Ecuaciones Diferenciales", desc: "Método de separación de variables (Ley de enfriamiento, etc.)." },
+    { s: 16, name: "Semana 16: Repaso Final", desc: "Evaluación integradora de todos los conceptos del curso." },
+  ];
 
-  console.log("📖 Creando temas...");
-  const tLimites = await Topic.create({
-    name: "Límites",
-    description: "Concepto de límite, límites laterales y al infinito.",
-    course: calc1._id,
-    order: 1,
-  });
-  const tDerivadas = await Topic.create({
-    name: "Derivadas",
-    description: "Reglas de derivación y aplicaciones.",
-    course: calc1._id,
-    order: 2,
-  });
-  const tCinematica = await Topic.create({
-    name: "Cinemática",
-    description: "MRU, MRUV y caída libre.",
-    course: fisica._id,
-    order: 1,
-  });
-  const tFunciones = await Topic.create({
-    name: "Funciones",
-    description: "Dominio, rango y tipos de funciones.",
-    course: fundCalc._id,
-    order: 1,
-  });
+  const topicosCreados = [];
 
-  calc1.topics = [tLimites._id, tDerivadas._id];
-  fisica.topics = [tCinematica._id];
-  fundCalc.topics = [tFunciones._id];
-  await Promise.all([calc1.save(), fisica.save(), fundCalc.save()]);
-
-  console.log("Creando técnicas de estudio...");
-  await StudyTechnique.create([
-    {
-      title: "Active Recall con tarjetas",
-      description:
-        "Crea tarjetas con preguntas y respóndelas sin mirar apuntes. Fuerza a tu cerebro a recuperar la información.",
-      steps: [
-        "Divide el tema en conceptos clave",
-        "Escribe una pregunta por tarjeta",
-        "Responde en voz alta sin mirar",
-        "Marca las que falles y repítelas al día siguiente",
-      ],
-      type: "active-recall",
+  for (let i = 0; i < semanas.length; i++) {
+    const sem = semanas[i];
+    const topic = await Topic.create({
+      name: sem.name,
+      description: sem.desc,
       course: calc1._id,
-      topic: tLimites._id,
-      estimatedMinutes: 25,
-    },
-    {
-      title: "Repetición espaciada (1-3-7)",
-      description:
-        "Repasa el tema al día 1, día 3 y día 7. Aprovecha la curva del olvido.",
-      steps: [
-        "Estudia hoy y agenda repaso mañana",
-        "Repasa en 3 días",
-        "Repasa en 7 días",
-      ],
-      type: "spaced-repetition",
-      course: fisica._id,
-      topic: tCinematica._id,
-      estimatedMinutes: 15,
-    },
-    {
-      title: "Técnica Feynman",
-      description:
-        "Explica el tema como si se lo enseñaras a un niño de 12 años. Detecta vacíos al instante.",
-      steps: [
-        "Escribe el concepto arriba de una hoja",
-        "Explícalo con palabras simples",
-        "Identifica dónde te trabas",
-        "Vuelve a la fuente y simplifica",
-      ],
-      type: "feynman",
-      course: fundCalc._id,
-      topic: tFunciones._id,
-      estimatedMinutes: 20,
-    },
-  ]);
+      order: sem.s
+    });
+    topicosCreados.push(topic);
+  }
 
-  console.log("Creando quizzes y preguntas...");
-  const quizLimites = await Quiz.create({
-    title: "Quiz rápido: Límites",
-    description: "Evalúa tu comprensión real de límites en 3 preguntas.",
-    topic: tLimites._id,
-    course: calc1._id,
-    difficulty: "basico",
-    estimatedMinutes: 5,
-  });
+  const tCinematica = await Topic.create({ name: "Cinemática", description: "MRU, MRUV y caída libre.", course: fisica._id, order: 1 });
 
-  const q1 = await Question.create({
-    quiz: quizLimites._id,
-    statement: "¿Cuál es el límite de (x² - 1)/(x - 1) cuando x → 1?",
-    options: ["0", "1", "2", "No existe"],
-    correctIndex: 2,
-    explanation:
-      "Factorizando: (x-1)(x+1)/(x-1) = x+1. Al evaluar en x=1 → 2.",
-    order: 1,
-  });
-  const q2 = await Question.create({
-    quiz: quizLimites._id,
-    statement: "Si lim(x→a) f(x) = L, ¿qué se cumple?",
-    options: [
-      "f(a) = L siempre",
-      "f puede no estar definida en a",
-      "f es continua en a",
-      "f(a) ≠ L",
-    ],
-    correctIndex: 1,
-    explanation:
-      "El límite describe el comportamiento cerca de a, no necesariamente en a.",
-    order: 2,
-  });
-  const q3 = await Question.create({
-    quiz: quizLimites._id,
-    statement: "El límite de 1/x cuando x → ∞ es:",
-    options: ["∞", "1", "0", "No existe"],
-    correctIndex: 2,
-    explanation: "Cuando x crece, 1/x se aproxima a 0.",
-    order: 3,
-  });
+  calc1.topics = topicosCreados.map(t => t._id);
+  fisica.topics = [tCinematica._id];
+  await Promise.all([calc1.save(), fisica.save()]);
 
-  quizLimites.questions = [q1._id, q2._id, q3._id];
-  await quizLimites.save();
+  console.log("🧠 Creando técnicas de estudio (Asignadas a semanas)...");
+  
+  // Rotamos 3 técnicas para las 16 semanas
+  const tecnicas = [
+    { title: "Técnica Feynman", type: "feynman", desc: "Explica el concepto como si se lo enseñaras a un niño de 12 años. Detecta vacíos al instante.", steps: ["Escribe el concepto", "Explícalo simple", "Identifica dónde te trabas", "Simplifica"] },
+    { title: "Active Recall con tarjetas", type: "active-recall", desc: "Crea tarjetas con preguntas y respóndelas sin mirar apuntes. Fuerza a tu cerebro a recordar.", steps: ["Divide el tema", "Crea preguntas", "Responde sin mirar", "Repite las falladas"] },
+    { title: "Resolución de Problemas", type: "problem-solving", desc: "La práctica hace al maestro. Resuelve ejercicios cronometrados para simular el examen.", steps: ["Lee el problema", "Identifica datos", "Plantea la solución", "Verifica tu respuesta"] }
+  ];
+
+  for (let i = 0; i < topicosCreados.length; i++) {
+    const tech = tecnicas[i % 3]; // Rota entre las 3 técnicas
+    await StudyTechnique.create({
+      title: tech.title,
+      description: tech.desc,
+      steps: tech.steps,
+      type: tech.type,
+      course: calc1._id,
+      topic: topicosCreados[i]._id, // Asignada a la semana específica
+      estimatedMinutes: 20 + (i * 2)
+    });
+  }
+
+  console.log("📝 Creando autoevaluaciones (Una por cada semana)...");
+  
+  for (let i = 0; i < topicosCreados.length; i++) {
+    const topic = topicosCreados[i];
+    
+    // Creamos un Quiz por semana
+    const quiz = await Quiz.create({
+      title: `Quiz Rápido: ${topic.name.split(': ')[1]}`, // Ej: "Quiz Rápido: Límites y Continuidad"
+      description: `Comprueba tu comprensión de la ${topic.name}.`,
+      topic: topic._id,
+      course: calc1._id,
+      difficulty: i < 5 ? "basico" : (i < 10 ? "intermedio" : "avanzado"),
+      estimatedMinutes: 5,
+    });
+
+    // Agregamos 1 pregunta de ejemplo (para que no esté vacío)
+    const q1 = await Question.create({
+      quiz: quiz._id,
+      statement: `[Pregunta de prueba] ¿Cuál es el concepto principal de la ${topic.name}?`,
+      options: ["Aplicar fórmulas memorizadas", "Comprender el análisis matemático", "Resolver problemas sin lógica", "Ninguna de las anteriores"],
+      correctIndex: 1,
+      explanation: "El curso busca desarrollar capacidades de razonamiento y modelación, no solo memorización.",
+      order: 1
+    });
+
+    quiz.questions = [q1._id];
+    await quiz.save();
+  }
 
   console.log("\nSeed completado con éxito");
-  console.log("Admin: admin@utec.edu.pe / admin123");
-  console.log("Alumno: leonardo@utec.edu.pe / leonardo123");
-  console.log("Mentor: andrea@utec.edu.pe / andrea123");
-
   await mongoose.connection.close();
   process.exit(0);
 };
