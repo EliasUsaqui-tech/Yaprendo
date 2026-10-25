@@ -8,4 +8,7 @@ router.post("/login", login);
 router.get("/me", protect, getMe);
 router.post("/forgot-password", forgotPassword);
 
+// ¡ESTA ES LA LÍNEA QUE FALTABA!
+router.put("/profile", protect, updateProfile); 
+
 export default router;
