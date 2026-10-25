@@ -1,15 +1,17 @@
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
+import { AVATARS } from "../utils/avatars"; // <-- IMPORTANTE
 
 export default function Dashboard() {
   const { user } = useAuth();
 
-  // REDIRECCIÓN: Si es mentor, lo enviamos a su propio panel
   if (user?.role === "mentor") {
     return <Navigate to="/mentor-panel" replace />;
   }
 
-  // Tarjetas principales del estudiante
+  // Buscamos el avatar del usuario
+  const currentAvatar = AVATARS.find((a) => a.id === user?.avatar) || AVATARS[0];
+
   const cards = [
     {
       to: "/courses",
@@ -39,13 +41,28 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <h1 className="text-3xl font-bold text-slate-100 mb-1">
-        Hola, {user?.name?.split(" ")[0] || "estudiante"} 👋
-      </h1>
-      <p className="text-slate-400 mb-8">
-        Tu espacio para estudiar con método y comprobar tu comprensión real.
-      </p>
+      
+      {/* ========================================== */}
+      {/* AVATAR ANTES DEL SALUDO */}
+      {/* ========================================== */}
+      <div className="flex items-center gap-5 mb-8">
+        {/* Avatar a la izquierda */}
+        <div className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl shadow-lg shrink-0 ${currentAvatar.bg}`}>
+          {currentAvatar.emoji}
+        </div>
+        
+        {/* Texto a la derecha */}
+        <div>
+          <h1 className="text-3xl font-bold text-slate-100">
+            Hola, {user?.name?.split(" ")[0] || "estudiante"} 👋
+          </h1>
+          <p className="text-slate-400">
+            Tu espacio para estudiar con método y comprobar tu comprensión real.
+          </p>
+        </div>
+      </div>
 
+      {/* TARJETAS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {cards.map((c) => (
           <Link
@@ -61,7 +78,7 @@ export default function Dashboard() {
         ))}
       </div>
 
-      {/* TARJETA DEL TEST DE DIAGNÓSTICO */}
+      {/* TARJETA DEL TEST */}
       <Link
         to="/test"
         className="card mt-6 bg-gradient-to-r from-blue-950 to-purple-950 border border-purple-800 hover:shadow-lg hover:border-purple-600 transition block"
