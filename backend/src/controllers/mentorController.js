@@ -1,6 +1,6 @@
-import Mentor from "../models/Mentor.js";
+import User from "../models/User.js"; // <-- Importamos User correctamente
 
-// GET /api/mentors?course=xxx
+// GET /api/mentors
 export const getMentors = async (req, res, next) => {
   try {
     // Buscamos en la colección de usuarios a todos los que sean "mentor"
@@ -17,9 +17,8 @@ export const getMentors = async (req, res, next) => {
 // GET /api/mentors/:id
 export const getMentorById = async (req, res, next) => {
   try {
-    const mentor = await Mentor.findById(req.params.id)
-      .populate("user", "name email cycle")
-      .populate("courses", "name");
+    // Ahora buscamos al mentor directamente en la colección de usuarios
+    const mentor = await User.findOne({ _id: req.params.id, role: "mentor" });
     if (!mentor) return res.status(404).json({ message: "Mentor no encontrado" });
     res.json(mentor);
   } catch (error) {
@@ -27,11 +26,13 @@ export const getMentorById = async (req, res, next) => {
   }
 };
 
-// POST /api/mentors (solo rol mentor)
+// POST /api/mentors (Por si acaso lo usas en el futuro)
 export const createMentor = async (req, res, next) => {
   try {
-    const mentor = await Mentor.create({ ...req.body, user: req.user._id });
-    res.status(201).json(mentor);
+    // Como ahora todo vive en User, aquí podrías actualizar a un usuario a rol mentor
+    // o simplemente crear el usuario con rol mentor.
+    const newMentor = await User.create({ ...req.body, role: "mentor" });
+    res.status(201).json(newMentor);
   } catch (error) {
     next(error);
   }
