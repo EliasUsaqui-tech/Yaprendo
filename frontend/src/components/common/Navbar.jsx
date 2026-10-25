@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { AVATARS } from "../../utils/avatars"; // Importar
+import { AVATARS } from "../../utils/avatars";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -19,6 +19,9 @@ export default function Navbar() {
         : "text-slate-300 hover:bg-slate-800"
     }`;
 
+  // Buscamos el avatar del usuario, si no tiene uno, usamos el primero por defecto
+  const currentAvatar = AVATARS.find((a) => a.id === user?.avatar) || AVATARS[0];
+
   return (
     <nav className="bg-slate-900 border-b border-slate-800 sticky top-0 z-10">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -30,7 +33,7 @@ export default function Navbar() {
           <div className="flex items-center gap-1">
             <Link to="/dashboard" className={linkClass("/dashboard")}>Inicio</Link>
 
-            {/* ====== VISTAS EXCLUSIVAS DEL ESTUDIANTE ====== */}
+            {/* VISTAS EXCLUSIVAS DEL ESTUDIANTE */}
             {user.role === "student" && (
               <>
                 <Link to="/courses" className={linkClass("/courses")}>Cursos</Link>
@@ -38,21 +41,27 @@ export default function Navbar() {
               </>
             )}
 
-            {/* ====== VISTAS EXCLUSIVAS DEL MENTOR ====== */}
+            {/* VISTAS EXCLUSIVAS DEL MENTOR */}
             {user.role === "mentor" && (
               <Link to="/mentor-panel" className={linkClass("/mentor-panel")}>Panel Mentor</Link>
             )}
-            
-            {user.avatar && (
-              <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm ml-2 ${AVATARS.find(a => a.id === user.avatar)?.bg || "bg-slate-700"}`}>
-                {AVATARS.find(a => a.id === user.avatar)?.emoji || "👤"}
-              </div>
-            )}
 
-            {/* ====== VISTAS COMPARTIDAS (Ambos roles) ====== */}
+            {/* VISTAS COMPARTIDAS */}
             <Link to="/techniques" className={linkClass("/techniques")}>Técnicas</Link>
             <Link to="/mentors" className={linkClass("/mentors")}>Directorio</Link>
 
+            {/* BOTÓN DE PERFIL (Avatar) */}
+            <Link 
+              to="/profile" 
+              title="Ir a mi perfil"
+              className="ml-3 flex items-center gap-2 hover:opacity-80 transition"
+            >
+              <div className={`w-9 h-9 rounded-full flex items-center justify-center text-lg shadow-md ${currentAvatar.bg}`}>
+                {currentAvatar.emoji}
+              </div>
+            </Link>
+
+            {/* BOTÓN DE SALIR */}
             <button
               onClick={handleLogout}
               className="ml-3 text-sm text-slate-400 hover:text-red-400"
