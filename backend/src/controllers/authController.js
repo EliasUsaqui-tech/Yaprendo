@@ -83,21 +83,23 @@ export const getMe = async (req, res) => {
 // @route   PUT /api/auth/profile
 export const updateProfile = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user._id);
-    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    // Usamos findByIdAndUpdate con { new: true } para que devuelva el usuario actualizado
+    const updatedUser = await User.findByIdAndUpdate(
+      req.user._id,
+      {
+        $set: {
+          name: req.body.name,
+          bio: req.body.bio,
+          avatar: req.body.avatar, // Aquí forzamos que se cree/actualice el campo
+        },
+      },
+      { new: true, runValidators: true } // new: true devuelve el doc modificado
+    );
 
-    user.name = req.body.name || user.name;
-    user.bio = req.body.bio || user.bio;
-    
-    // Si el frontend envía un avatar, lo actualizamos
-    if (req.body.avatar) {
-      user.avatar = req.body.avatar;
-      // ESTA ES LA LÍNEA MÁGICA: Le dice a Mongoose que guarde el campo sí o sí
-      user.markModified('avatar'); 
+    if (!updatedUser) {
+      return res.status(404).json({ message: "Usuario no encontrado" });
     }
 
-    const updatedUser = await user.save();
-    
     res.json({
       _id: updatedUser._id,
       name: updatedUser.name,
@@ -106,7 +108,7 @@ export const updateProfile = async (req, res, next) => {
       role: updatedUser.role,
       bio: updatedUser.bio,
       expertise: updatedUser.expertise,
-      avatar: updatedUser.avatar || "bottts|utec|b6e3f4", // Devolvemos el avatar
+      avatar: updatedUser.avatar,
       token: req.headers.authorization.split(" ")[1],
     });
   } catch (error) {
