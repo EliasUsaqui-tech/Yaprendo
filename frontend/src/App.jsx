@@ -12,9 +12,11 @@ import Quiz from "./pages/Quiz";
 import Mentors from "./pages/Mentors";
 import Progress from "./pages/Progress";
 import MentorDashboard from "./pages/MentorDashboard"; 
-import Profile from "./pages/Profile"; // <-- 1. Importamos el nuevo perfil
+import Profile from "./pages/Profile";
 import ForgotPassword from "./pages/ForgotPassword";
-
+// NUEVOS IMPORTS PARA EL TEST
+import StudyTest from "./pages/StudyTest";
+import Recommendation from "./pages/Recommendation";
 
 function Layout({ children }) {
   return (
@@ -32,26 +34,32 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
           <Route path="/" element={<Navigate to="/dashboard" replace />} />
           
           <Route
             path="/dashboard"
             element={<ProtectedRoute><Layout><Dashboard /></Layout></ProtectedRoute>}
           />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
 
-          {/* ======================================================== */}
-          {/* RUTA NUEVA PARA EL PERFIL */}
           <Route
             path="/profile"
             element={<ProtectedRoute><Layout><Profile /></Layout></ProtectedRoute>}
           />
-          {/* ======================================================== */}
           
-          {/* RUTA PARA EL MENTOR */}
           <Route
             path="/mentor-panel"
             element={<ProtectedRoute><Layout><MentorDashboard /></Layout></ProtectedRoute>}
+          />
+
+          {/* RUTAS NUEVAS DEL TEST DE ESTUDIO */}
+          <Route
+            path="/test"
+            element={<ProtectedRoute><Layout><StudyTest /></Layout></ProtectedRoute>}
+          />
+          <Route
+            path="/recommendation"
+            element={<ProtectedRoute><Layout><Recommendation /></Layout></ProtectedRoute>}
           />
 
           <Route

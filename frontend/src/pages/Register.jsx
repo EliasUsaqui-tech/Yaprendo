@@ -43,7 +43,7 @@ export default function Register() {
 
     try {
       await register(payload);
-      navigate("/dashboard");
+      navigate("/test");
     } catch (err) {
       setError(err.response?.data?.message || "Error al registrarse");
     } finally {

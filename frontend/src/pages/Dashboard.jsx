@@ -4,14 +4,12 @@ import { useAuth } from "../hooks/useAuth";
 export default function Dashboard() {
   const { user } = useAuth();
 
-  // ==========================================
   // REDIRECCIÓN: Si es mentor, lo enviamos a su propio panel
-  // ==========================================
   if (user?.role === "mentor") {
     return <Navigate to="/mentor-panel" replace />;
   }
 
-  // A partir de aquí, el código solo se ejecuta para estudiantes
+  // Tarjetas principales del estudiante
   const cards = [
     {
       to: "/courses",
@@ -63,6 +61,25 @@ export default function Dashboard() {
         ))}
       </div>
 
+      {/* TARJETA DEL TEST DE DIAGNÓSTICO */}
+      <Link
+        to="/test"
+        className="card mt-6 bg-gradient-to-r from-blue-950 to-purple-950 border border-purple-800 hover:shadow-lg hover:border-purple-600 transition block"
+      >
+        <div className="flex items-center justify-between">
+          <div>
+            <h2 className="text-lg font-semibold text-purple-200 mb-1 flex items-center gap-2">
+              🧠 ¿No sabes cómo estudiar?
+            </h2>
+            <p className="text-sm text-slate-300">
+              Haz nuestro test rápido de 6 preguntas y descubre qué técnica activa se adapta mejor a ti.
+            </p>
+          </div>
+          <div className="text-4xl hidden md:block">🎯</div>
+        </div>
+      </Link>
+
+      {/* RECOMENDACIÓN GENERAL */}
       <div className="card mt-8 bg-blue-950 border-blue-800">
         <h3 className="font-semibold text-blue-300 mb-1">
           💡 Método recomendado
