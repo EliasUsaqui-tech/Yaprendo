@@ -7,7 +7,6 @@ import Topic from "../models/Topic.js";
 import StudyTechnique from "../models/StudyTechnique.js";
 import Quiz from "../models/Quiz.js";
 import Question from "../models/Question.js";
-import Mentor from "../models/Mentor.js";
 
 const run = async () => {
   await connectDB();
@@ -20,7 +19,6 @@ const run = async () => {
     StudyTechnique.deleteMany(),
     Quiz.deleteMany(),
     Question.deleteMany(),
-    Mentor.deleteMany(),
   ]);
 
   console.log("Creando usuarios...");
@@ -40,12 +38,15 @@ const run = async () => {
     role: "student",
   });
 
+  // Aquí está la magia: Andrea ahora es un User con bio y expertise
   const mentorUser = await User.create({
     name: "Andrea Mentor",
     email: "andrea@utec.edu.pe",
     password: "andrea123",
     cycle: "6",
     role: "mentor",
+    bio: "Estudiante de 6to ciclo, me gusta explicar con ejemplos prácticos.",
+    expertise: ["Cálculo 1", "Física 1"],
   });
 
   console.log("Creando cursos...");
@@ -197,26 +198,16 @@ const run = async () => {
   quizLimites.questions = [q1._id, q2._id, q3._id];
   await quizLimites.save();
 
-  console.log("🧑‍🏫 Creando mentor...");
-  await Mentor.create({
-    user: mentorUser._id,
-    courses: [calc1._id, fisica._id],
-    bio: "Estudiante de 6to ciclo, me gusta explicar con ejemplos prácticos.",
-    contactEmail: "andrea@utec.edu.pe",
-    contactLink: "https://discord.gg/utec-calc",
-    available: true,
-  });
-
   console.log("\nSeed completado con éxito");
   console.log("Admin: admin@utec.edu.pe / admin123");
   console.log("Alumno: leonardo@utec.edu.pe / leonardo123");
-  console.log(" Mentor: andrea@utec.edu.pe / andrea123");
+  console.log("Mentor: andrea@utec.edu.pe / andrea123");
 
   await mongoose.connection.close();
   process.exit(0);
 };
 
 run().catch((err) => {
-  console.error(" Error en seed:", err);
+  console.error("Error en seed:", err);
   process.exit(1);
 });
