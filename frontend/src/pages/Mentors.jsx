@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { mentorService } from "../services/mentorService";
-import { parseAvatar } from "../utils/avatars"; // <-- Usamos el traductor
+import { getAvatarUrl } from "../utils/avatars"; 
 import Loader from "../components/common/Loader";
 
 export default function Mentors() {
@@ -33,8 +33,16 @@ export default function Mentors() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {mentors.map((m) => {
-            // MAGIA: El traductor se encarga de leer bien el string
-            const avatarUrl = parseAvatar(m.avatar, m.name);
+            // Leemos el string de 3 partes: estilo | semilla | color
+            // Ejemplo: "bottts|Elias|b6e3f4"
+            const avatarData = m.avatar || "bottts||";
+            const parts = avatarData.split("|");
+            
+            const style = parts[0] || "bottts";
+            const seed = parts[1] || m.name || "utec";
+            const bgColor = parts[2] || "";
+            
+            const avatarUrl = getAvatarUrl(style, seed, bgColor);
 
             return (
               <div key={m._id} className="card flex flex-col justify-between">
