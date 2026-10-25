@@ -25,11 +25,12 @@ const userSchema = new mongoose.Schema(
     // Cursos en los que está matriculado (referencias a Course)
     enrolledCourses: [{ type: mongoose.Schema.Types.ObjectId, ref: "Course" }],
     
-    // ==========================================
-    // NUEVOS CAMPOS PARA EL MENTOR
-    // ==========================================
+    // Campos para el Mentor
     bio: { type: String, default: "" },
     expertise: [{ type: String }],
+
+    // ¡ESTE ES EL CAMPO QUE FALTABA!
+    avatar: { type: String, default: "bottts|utec|b6e3f4" },
   },
   { timestamps: true }
 );
