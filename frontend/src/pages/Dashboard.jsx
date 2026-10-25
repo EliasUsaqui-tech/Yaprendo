@@ -1,6 +1,6 @@
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { getAvatarUrl } from "../utils/avatars"; // <-- NUEVA IMPORTACIÓN
+import { getAvatarUrl } from "../utils/avatars"; 
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -9,9 +9,13 @@ export default function Dashboard() {
     return <Navigate to="/mentor-panel" replace />;
   }
 
-  const initialAvatar = user?.avatar || "bottts|utec";
-  const [avatarStyle, avatarSeed, bgColor, accessories] = initialAvatar.split("|");
-  const avatarUrl = getAvatarUrl(avatarStyle, avatarSeed, bgColor || "", accessories || "");
+  // Separamos las 3 partes: estilo | semilla | color
+  const avatarParts = (user?.avatar || "bottts|utec||").split("|");
+  const style = avatarParts[0] || "bottts";
+  const seed = avatarParts[1] || user?.name || "utec";
+  const bgColor = avatarParts[2] || "";
+
+  const avatarUrl = getAvatarUrl(style, seed, bgColor);
 
   const cards = [
     {
@@ -45,7 +49,6 @@ export default function Dashboard() {
       
       {/* AVATAR Y SALUDO */}
       <div className="flex items-center gap-5 mb-8">
-        {/* Avatar generado */}
         <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg border-2 border-blue-500 bg-slate-800 shrink-0">
           <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
         </div>

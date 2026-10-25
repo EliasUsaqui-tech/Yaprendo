@@ -33,14 +33,13 @@ export default function Mentors() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {mentors.map((m) => {
-            // Separamos las 4 partes: estilo | semilla | color | accesorios
+            // Separamos las 3 partes: estilo | semilla | color
             const avatarParts = (m.avatar || "bottts|utec||").split("|");
             const style = avatarParts[0] || "bottts";
             const seed = avatarParts[1] || m.name || "utec";
             const bgColor = avatarParts[2] || "";
-            const accessories = avatarParts[3] || "";
             
-            const avatarUrl = getAvatarUrl(style, seed, bgColor, accessories);
+            const avatarUrl = getAvatarUrl(style, seed, bgColor);
 
             return (
               <div key={m._id} className="card flex flex-col justify-between">

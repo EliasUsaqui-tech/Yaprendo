@@ -5,15 +5,14 @@ import { getAvatarUrl } from "../utils/avatars";
 export default function MentorDashboard() {
   const { user } = useAuth();
 
-  // Separamos las 4 partes del avatar: estilo | semilla | color | accesorios
+  // Separamos las 3 partes del avatar: estilo | semilla | color
   const avatarParts = (user?.avatar || "bottts|utec||").split("|");
   const style = avatarParts[0] || "bottts";
   const seed = avatarParts[1] || user?.name || "utec";
   const bgColor = avatarParts[2] || "";
-  const accessories = avatarParts[3] || "";
 
   // Generamos la URL del avatar
-  const avatarUrl = getAvatarUrl(style, seed, bgColor, accessories);
+  const avatarUrl = getAvatarUrl(style, seed, bgColor);
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
