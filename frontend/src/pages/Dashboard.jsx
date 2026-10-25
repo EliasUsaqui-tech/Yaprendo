@@ -1,6 +1,6 @@
 import { Link, Navigate } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
-import { AVATARS } from "../utils/avatars"; // <-- IMPORTANTE
+import { getAvatarUrl } from "../utils/avatars"; // <-- NUEVA IMPORTACIÓN
 
 export default function Dashboard() {
   const { user } = useAuth();
@@ -9,8 +9,12 @@ export default function Dashboard() {
     return <Navigate to="/mentor-panel" replace />;
   }
 
-  // Buscamos el avatar del usuario
-  const currentAvatar = AVATARS.find((a) => a.id === user?.avatar) || AVATARS[0];
+  // Separamos el estilo y la semilla
+  const initialAvatar = user?.avatar || "bottts|utec";
+  const [avatarStyle, avatarSeed] = initialAvatar.split("|");
+
+  // Generamos la URL
+  const avatarUrl = getAvatarUrl(avatarStyle || "bottts", avatarSeed || user?.name || "utec");
 
   const cards = [
     {
@@ -42,16 +46,13 @@ export default function Dashboard() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       
-      {/* ========================================== */}
-      {/* AVATAR ANTES DEL SALUDO */}
-      {/* ========================================== */}
+      {/* AVATAR Y SALUDO */}
       <div className="flex items-center gap-5 mb-8">
-        {/* Avatar a la izquierda */}
-        <div className={`w-16 h-16 rounded-full flex items-center justify-center text-3xl shadow-lg shrink-0 ${currentAvatar.bg}`}>
-          {currentAvatar.emoji}
+        {/* Avatar generado */}
+        <div className="w-16 h-16 rounded-full overflow-hidden shadow-lg border-2 border-blue-500 bg-slate-800 shrink-0">
+          <img src={avatarUrl} alt="Avatar" className="w-full h-full object-cover" />
         </div>
         
-        {/* Texto a la derecha */}
         <div>
           <h1 className="text-3xl font-bold text-slate-100">
             Hola, {user?.name?.split(" ")[0] || "estudiante"} 👋
@@ -62,7 +63,6 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* TARJETAS */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {cards.map((c) => (
           <Link
