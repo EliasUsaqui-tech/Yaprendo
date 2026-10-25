@@ -36,8 +36,9 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  // ¡Aquí está la magia! Agregamos setUser para que el perfil lo pueda usar
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout }}>
+    <AuthContext.Provider value={{ user, loading, login, register, logout, setUser }}>
       {children}
     </AuthContext.Provider>
   );

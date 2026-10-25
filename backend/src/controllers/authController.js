@@ -9,8 +9,7 @@ const generateToken = (id) =>
 // @route   POST /api/auth/register
 export const register = async (req, res, next) => {
   try {
-    // 1. Recibimos también 'bio' y 'expertise' del frontend
-    const { name, email, password, cycle, role, bio, expertise } = req.body;
+    const { name, email, password, cycle, role, bio, expertise, avatar } = req.body;
 
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Faltan campos obligatorios" });
@@ -21,10 +20,8 @@ export const register = async (req, res, next) => {
       return res.status(400).json({ message: "El correo ya está registrado" });
     }
 
-    // 2. Si es mentor y no envían ciclo, le ponemos uno por defecto (5)
     const userCycle = role === "mentor" ? (cycle || "5") : cycle;
 
-    // 3. Creamos el usuario guardando los campos extra si es mentor
     const user = await User.create({ 
       name, 
       email, 
@@ -32,7 +29,8 @@ export const register = async (req, res, next) => {
       cycle: userCycle, 
       role: role || "student",
       bio: role === "mentor" ? bio : "",
-      expertise: role === "mentor" ? expertise : []
+      expertise: role === "mentor" ? expertise : [],
+      avatar: avatar || "avatar_1" // Guardamos el avatar elegido
     });
 
     res.status(201).json({
@@ -41,8 +39,9 @@ export const register = async (req, res, next) => {
       email: user.email,
       cycle: user.cycle,
       role: user.role,
-      bio: user.bio,              // <-- Devolvemos la bio
-      expertise: user.expertise,  // <-- Devolvemos los cursos
+      bio: user.bio,
+      expertise: user.expertise,
+      avatar: user.avatar,
       token: generateToken(user._id),
     });
   } catch (error) {
@@ -66,8 +65,9 @@ export const login = async (req, res, next) => {
       email: user.email,
       cycle: user.cycle,
       role: user.role,
-      bio: user.bio,              // <-- Devolvemos la bio al hacer login
-      expertise: user.expertise,  // <-- Devolvemos los cursos al hacer login
+      bio: user.bio,
+      expertise: user.expertise,
+      avatar: user.avatar || "avatar_1",
       token: generateToken(user._id),
     });
   } catch (error) {
@@ -78,4 +78,32 @@ export const login = async (req, res, next) => {
 // @route   GET /api/auth/me
 export const getMe = async (req, res) => {
   res.json(req.user);
+};
+
+// @route   PUT /api/auth/profile
+export const updateProfile = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+
+    user.name = req.body.name || user.name;
+    user.bio = req.body.bio || user.bio;
+    user.avatar = req.body.avatar || user.avatar;
+
+    const updatedUser = await user.save();
+    
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      cycle: updatedUser.cycle,
+      role: updatedUser.role,
+      bio: updatedUser.bio,
+      expertise: updatedUser.expertise,
+      avatar: updatedUser.avatar,
+      token: req.headers.authorization.split(" ")[1],
+    });
+  } catch (error) {
+    next(error);
+  }
 };
