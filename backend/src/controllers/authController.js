@@ -88,7 +88,13 @@ export const updateProfile = async (req, res, next) => {
 
     user.name = req.body.name || user.name;
     user.bio = req.body.bio || user.bio;
-    user.avatar = req.body.avatar || user.avatar;
+    
+    // Si el frontend envía un avatar, lo actualizamos
+    if (req.body.avatar) {
+      user.avatar = req.body.avatar;
+      // ESTA ES LA LÍNEA MÁGICA: Le dice a Mongoose que guarde el campo sí o sí
+      user.markModified('avatar'); 
+    }
 
     const updatedUser = await user.save();
     
@@ -100,7 +106,7 @@ export const updateProfile = async (req, res, next) => {
       role: updatedUser.role,
       bio: updatedUser.bio,
       expertise: updatedUser.expertise,
-      avatar: updatedUser.avatar,
+      avatar: updatedUser.avatar || "bottts|utec|b6e3f4", // Devolvemos el avatar
       token: req.headers.authorization.split(" ")[1],
     });
   } catch (error) {
