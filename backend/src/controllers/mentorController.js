@@ -1,11 +1,12 @@
-import User from "../models/User.js"; // <-- Importamos User correctamente
+import User from "../models/User.js";
 
 // GET /api/mentors
 export const getMentors = async (req, res, next) => {
   try {
     // Buscamos en la colección de usuarios a todos los que sean "mentor"
     const mentors = await User.find({ role: "mentor" })
-      .select("name cycle bio expertise email") // Traemos solo los datos necesarios
+      // ¡ESTA ES LA LÍNEA QUE FALTABA! Agregamos "avatar"
+      .select("name cycle bio expertise email avatar") 
       .sort("-createdAt"); // Los más recientes primero
 
     res.json(mentors);
