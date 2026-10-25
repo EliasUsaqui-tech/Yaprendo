@@ -22,8 +22,7 @@ export default function Mentors() {
         Directorio de mentores
       </h1>
       <p className="text-slate-400 mb-6">
-        Conecta con estudiantes de ciclos superiores que ya pasaron por los
-        cursos filtro.
+        Conecta con estudiantes de ciclos superiores que ya pasaron por los cursos filtro.
       </p>
 
       {mentors.length === 0 ? (
@@ -33,54 +32,50 @@ export default function Mentors() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {mentors.map((m) => (
-            <div key={m._id} className="card">
-              <div className="flex items-center gap-3 mb-3">
-                <div className="w-12 h-12 rounded-full bg-utec-primary text-white flex items-center justify-center font-bold text-lg">
-                  {m.user?.name?.charAt(0) || "?"}
+            <div key={m._id} className="card flex flex-col justify-between">
+              <div>
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-12 h-12 rounded-full bg-emerald-600 text-white flex items-center justify-center font-bold text-lg">
+                    {m.name?.charAt(0) || "?"}
+                  </div>
+                  <div>
+                    <h2 className="font-semibold text-slate-100">
+                      {m.name}
+                    </h2>
+                    <p className="text-xs text-slate-400">
+                      Ciclo {m.cycle}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <h2 className="font-semibold text-slate-100">
-                    {m.user?.name}
-                  </h2>
-                  <p className="text-xs text-slate-400">
-                    Ciclo {m.user?.cycle}
-                  </p>
-                </div>
+                
+                {/* Biografía */}
+                {m.bio && (
+                  <p className="text-sm text-slate-300 mb-3">{m.bio}</p>
+                )}
+
+                {/* Cursos que domina */}
+                {m.expertise?.length > 0 && (
+                  <div className="flex flex-wrap gap-1 mb-3">
+                    {m.expertise.map((course, i) => (
+                      <span
+                        key={i}
+                        className="text-xs bg-slate-700 text-slate-200 border border-slate-600 px-2 py-0.5 rounded"
+                      >
+                        {course}
+                      </span>
+                    ))}
+                  </div>
+                )}
               </div>
-              {m.bio && (
-                <p className="text-sm text-slate-300 mb-3">{m.bio}</p>
-              )}
-              {m.courses?.length > 0 && (
-                <div className="flex flex-wrap gap-1 mb-3">
-                  {m.courses.map((c) => (
-                    <span
-                      key={c._id}
-                      className="text-xs bg-blue-950 text-blue-300 border border-blue-800 px-2 py-0.5 rounded"
-                    >
-                      {c.name}
-                    </span>
-                  ))}
-                </div>
-              )}
+
+              {/* Botón de contacto */}
               <div className="flex gap-2 pt-3 border-t border-slate-700">
-                {m.contactEmail && (
-                  <a
-                    href={`mailto:${m.contactEmail}`}
-                    className="btn-secondary text-xs flex-1 text-center"
-                  >
-                    Correo
-                  </a>
-                )}
-                {m.contactLink && (
-                  <a
-                    href={m.contactLink}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="btn-primary text-xs flex-1 text-center"
-                  >
-                    Contactar
-                  </a>
-                )}
+                <a
+                  href={`mailto:${m.email}`}
+                  className="btn-secondary text-xs w-full text-center"
+                >
+                  Contactar por correo
+                </a>
               </div>
             </div>
           ))}

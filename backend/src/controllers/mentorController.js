@@ -3,12 +3,11 @@ import Mentor from "../models/Mentor.js";
 // GET /api/mentors?course=xxx
 export const getMentors = async (req, res, next) => {
   try {
-    const filter = { available: true };
-    if (req.query.course) filter.courses = req.query.course;
+    // Buscamos en la colección de usuarios a todos los que sean "mentor"
+    const mentors = await User.find({ role: "mentor" })
+      .select("name cycle bio expertise email") // Traemos solo los datos necesarios
+      .sort("-createdAt"); // Los más recientes primero
 
-    const mentors = await Mentor.find(filter)
-      .populate("user", "name email cycle")
-      .populate("courses", "name code");
     res.json(mentors);
   } catch (error) {
     next(error);
