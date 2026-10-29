@@ -1,18 +1,47 @@
 import { useEffect, useState } from "react";
 import { techniqueService } from "../services/techniqueService";
+import { courseService } from "../services/courseService";
+import { useNavigate } from "react-router-dom";
 import Loader from "../components/common/Loader";
 
 export default function Techniques() {
   const [techniques, setTechniques] = useState([]);
+  const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  // Estados para el Modal
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedTechnique, setSelectedTechnique] = useState(null);
 
   useEffect(() => {
-    techniqueService
-      .getAll()
-      .then(setTechniques)
+    Promise.all([techniqueService.getAll(), courseService.getAll()])
+      .then(([techData, courseData]) => {
+        setTechniques(techData);
+        setCourses(courseData);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
+
+  const handleOpenModal = (technique) => {
+    setSelectedTechnique(technique);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setSelectedTechnique(null);
+  };
+
+  const handleApply = (courseId, courseName) => {
+    // Guardamos el curso y la técnica en el localStorage
+    localStorage.setItem("active_course", JSON.stringify({ id: courseId, name: courseName }));
+    localStorage.setItem("active_technique", JSON.stringify(selectedTechnique));
+    
+    // Redirigimos al detalle del curso
+    navigate(`/courses/${courseId}`);
+  };
 
   if (loading) return <Loader />;
 
@@ -25,14 +54,12 @@ export default function Techniques() {
         Métodos curados por curso y tema. Prioriza método, no volumen.
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {techniques.map((t) => {
-          // Si es Pomodoro, renderizamos la tarjeta especial con el reloj
           if (t.type === "pomodoro") {
-            return <PomodoroCard key={t._id} technique={t} />;
+            return <PomodoroCard key={t._id} technique={t} onApply={() => handleOpenModal(t)} />;
           }
 
-          // Tarjeta normal para las demás técnicas
           return (
             <div key={t._id} className="card flex flex-col justify-between">
               <div>
@@ -44,21 +71,67 @@ export default function Techniques() {
                 </div>
                 <p className="text-sm text-slate-300 mb-3">{t.description}</p>
                 {t.steps?.length > 0 && (
-                  <ol className="list-decimal list-inside text-sm text-slate-400 space-y-1 mb-4">
+                  <ol className="list-decimal list-inside text-sm text-slate-400 space-y-1 mb-6">
                     {t.steps.map((s, i) => (
                       <li key={i}>{s}</li>
                     ))}
                   </ol>
                 )}
               </div>
-              <div className="flex justify-between text-xs text-slate-500 pt-3 border-t border-slate-700">
-                <span>{t.course?.name || "General"}</span>
-                <span>{t.estimatedMinutes} min</span>
+              
+              <div>
+                <button 
+                  onClick={() => handleOpenModal(t)}
+                  className="btn-primary w-full mb-4 text-sm"
+                >
+                  Aplicar esta técnica
+                </button>
+                <div className="flex justify-between text-xs text-slate-500 pt-3 border-t border-slate-700">
+                  <span>{t.course?.name || "General"}</span>
+                  <span>{t.estimatedMinutes} min</span>
+                </div>
               </div>
             </div>
           );
         })}
       </div>
+
+      {/* MODAL PARA ELEGIR EL CURSO */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 px-4">
+          <div className="bg-slate-900 border border-slate-700 rounded-xl p-6 w-full max-w-md shadow-2xl">
+            <h2 className="text-xl font-bold text-slate-100 mb-2">
+              ¿A qué curso aplicarás esta técnica?
+            </h2>
+            <p className="text-sm text-slate-400 mb-6">
+              Vas a aplicar <strong className="text-blue-400">{selectedTechnique?.title}</strong>. Elige el curso para comenzar.
+            </p>
+
+            <div className="space-y-3 mb-6">
+              {courses.map((course) => (
+                <button
+                  key={course._id}
+                  onClick={() => handleApply(course._id, course.name)}
+                  className="w-full text-left bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg p-3 transition flex justify-between items-center"
+                >
+                  <div>
+                    <p className="font-medium text-slate-200">{course.name}</p>
+                    <p className="text-xs text-slate-400">{course.code}</p>
+                  </div>
+                  <span className="text-slate-500">→</span>
+                </button>
+              ))}
+            </div>
+
+            <button 
+              onClick={handleCloseModal}
+              className="w-full py-2 text-sm text-slate-400 hover:text-white transition"
+            >
+              Cancelar
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -66,10 +139,10 @@ export default function Techniques() {
 // ==========================================
 // COMPONENTE DEL CRONÓMETRO POMODORO
 // ==========================================
-function PomodoroCard({ technique }) {
-  const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutos en segundos
+function PomodoroCard({ technique, onApply }) {
+  const [timeLeft, setTimeLeft] = useState(25 * 60);
   const [isActive, setIsActive] = useState(false);
-  const [mode, setMode] = useState("focus"); // "focus" o "break"
+  const [mode, setMode] = useState("focus");
 
   useEffect(() => {
     let interval = null;
@@ -78,7 +151,6 @@ function PomodoroCard({ technique }) {
         setTimeLeft((time) => time - 1);
       }, 1000);
     } else if (timeLeft === 0) {
-      // Cuando llega a cero, cambia de modo y avisa
       if (mode === "focus") {
         alert("¡Tiempo de enfoque terminado! Tómate 5 minutos de descanso.");
         setMode("break");
@@ -100,14 +172,12 @@ function PomodoroCard({ technique }) {
     setTimeLeft(mode === "focus" ? 25 * 60 : 5 * 60);
   };
 
-  // Formatear tiempo a MM:SS
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
   const formattedTime = `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
 
   return (
     <div className="card flex flex-col justify-between border-emerald-800 bg-slate-900 shadow-xl relative overflow-hidden">
-      {/* Indicador visual del modo */}
       <div className={`absolute top-0 left-0 w-full h-1 ${mode === 'focus' ? 'bg-red-500' : 'bg-emerald-500'}`}></div>
       
       <div>
@@ -119,7 +189,6 @@ function PomodoroCard({ technique }) {
         </div>
         <p className="text-sm text-slate-300 mb-4">{technique.description}</p>
         
-        {/* Cronómetro Visual */}
         <div className="flex flex-col items-center justify-center py-6 mb-4 bg-slate-950 rounded-xl border border-slate-800">
           <span className={`text-6xl font-mono font-bold tracking-tight ${mode === 'focus' ? 'text-red-400' : 'text-emerald-400'}`}>
             {formattedTime}
@@ -141,18 +210,19 @@ function PomodoroCard({ technique }) {
             </button>
           </div>
         </div>
-
-        {technique.steps?.length > 0 && (
-          <ol className="list-decimal list-inside text-sm text-slate-400 space-y-1 mb-4">
-            {technique.steps.map((s, i) => (
-              <li key={i}>{s}</li>
-            ))}
-          </ol>
-        )}
       </div>
-      <div className="flex justify-between text-xs text-slate-500 pt-3 border-t border-slate-700">
-        <span>{technique.course?.name || "General"}</span>
-        <span>{technique.estimatedMinutes} min</span>
+
+      <div>
+        <button 
+          onClick={onApply}
+          className="bg-emerald-600 hover:bg-emerald-500 text-white w-full mb-4 py-2 rounded-lg font-medium transition text-sm"
+        >
+          Aplicar Pomodoro
+        </button>
+        <div className="flex justify-between text-xs text-slate-500 pt-3 border-t border-slate-700">
+          <span>{technique.course?.name || "General"}</span>
+          <span>{technique.estimatedMinutes} min</span>
+        </div>
       </div>
     </div>
   );

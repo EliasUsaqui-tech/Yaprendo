@@ -10,8 +10,17 @@ export default function CourseDetail() {
   const [topics, setTopics] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  // Estado para el Modo Enfoque
+  const [activeTechnique, setActiveTechnique] = useState(null);
 
   useEffect(() => {
+    // Revisamos si venimos de aplicar una técnica
+    const savedTechnique = localStorage.getItem("active_technique");
+    if (savedTechnique) {
+      setActiveTechnique(JSON.parse(savedTechnique));
+    }
+
     Promise.all([
       courseService.getById(id),
       courseService.getTopics(id),
@@ -25,6 +34,11 @@ export default function CourseDetail() {
       .catch(console.error)
       .finally(() => setLoading(false));
   }, [id]);
+
+  const clearFocusMode = () => {
+    localStorage.removeItem("active_technique");
+    setActiveTechnique(null);
+  };
 
   if (loading) return <Loader />;
   if (!course)
@@ -41,9 +55,29 @@ export default function CourseDetail() {
       </h1>
       <p className="text-slate-400 mb-6">{course.description}</p>
 
+      {/* BANNER DE MODO ENFOQUE */}
+      {activeTechnique && (
+        <div className="bg-gradient-to-r from-purple-900 to-blue-900 border border-purple-500 rounded-xl p-4 mb-8 flex justify-between items-center shadow-lg">
+          <div className="flex items-center gap-4">
+            <span className="text-4xl">🎯</span>
+            <div>
+              <h3 className="text-lg font-bold text-white">Modo Enfoque Activado</h3>
+              <p className="text-sm text-purple-200">
+                Estás aplicando la <strong>{activeTechnique.title}</strong> en este curso. Sigue los pasos y realiza las autoevaluaciones.
+              </p>
+            </div>
+          </div>
+          <button 
+            onClick={clearFocusMode}
+            className="text-xs bg-black/30 hover:bg-black/50 text-white px-3 py-2 rounded-lg transition"
+          >
+            Salir del Enfoque
+          </button>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         
-        {/* ====== LISTA DE TEMAS (CLICABLES) ====== */}
         <div className="card">
           <h2 className="font-semibold text-slate-100 mb-4 flex items-center gap-2">
             📖 Temas del curso
@@ -74,7 +108,6 @@ export default function CourseDetail() {
           </ul>
         </div>
 
-        {/* ====== AUTOEVALUACIONES DEL CURSO ====== */}
         <div className="card h-fit">
           <h2 className="font-semibold text-slate-100 mb-4 flex items-center gap-2">
             📝 Autoevaluaciones disponibles

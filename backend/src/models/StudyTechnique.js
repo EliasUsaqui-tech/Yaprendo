@@ -7,7 +7,7 @@ const techniqueSchema = new mongoose.Schema(
     steps: [{ type: String }], // pasos concretos
     type: {
       type: String,
-      enum: ["active-recall", "spaced-repetition", "feynman", "problem-solving", "other"],
+      enum: ["active-recall", "spaced-repetition", "feynman", "problem-solving", "pomodoro", "other"],
       default: "other",
     },
     course: { type: mongoose.Schema.Types.ObjectId, ref: "Course" },
