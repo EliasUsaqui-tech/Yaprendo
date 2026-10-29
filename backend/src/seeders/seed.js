@@ -85,27 +85,42 @@ const run = async () => {
   fisica.topics = [tCinematica._id];
   await Promise.all([calc1.save(), fisica.save()]);
 
-  console.log("🧠 Creando técnicas de estudio (Asignadas a semanas)...");
+  console.log("🧠 Creando las 4 técnicas de estudio base...");
   
-  // Rotamos 3 técnicas para las 16 semanas
-  const tecnicas = [
-    { title: "Técnica Feynman", type: "feynman", desc: "Explica el concepto como si se lo enseñaras a un niño de 12 años. Detecta vacíos al instante.", steps: ["Escribe el concepto", "Explícalo simple", "Identifica dónde te trabas", "Simplifica"] },
-    { title: "Active Recall con tarjetas", type: "active-recall", desc: "Crea tarjetas con preguntas y respóndelas sin mirar apuntes. Fuerza a tu cerebro a recordar.", steps: ["Divide el tema", "Crea preguntas", "Responde sin mirar", "Repite las falladas"] },
-    { title: "Resolución de Problemas", type: "problem-solving", desc: "La práctica hace al maestro. Resuelve ejercicios cronometrados para simular el examen.", steps: ["Lee el problema", "Identifica datos", "Plantea la solución", "Verifica tu respuesta"] }
-  ];
-
-  for (let i = 0; i < topicosCreados.length; i++) {
-    const tech = tecnicas[i % 3]; // Rota entre las 3 técnicas
-    await StudyTechnique.create({
-      title: tech.title,
-      description: tech.desc,
-      steps: tech.steps,
-      type: tech.type,
+  await StudyTechnique.create([
+    {
+      title: "Técnica Feynman",
+      description: "Explica el concepto como si se lo enseñaras a un niño de 12 años. Detecta vacíos al instante.",
+      steps: ["Escribe el concepto", "Explícalo simple", "Identifica dónde te trabas", "Simplifica"],
+      type: "feynman",
       course: calc1._id,
-      topic: topicosCreados[i]._id, // Asignada a la semana específica
-      estimatedMinutes: 20 + (i * 2)
-    });
-  }
+      estimatedMinutes: 20,
+    },
+    {
+      title: "Active Recall con tarjetas",
+      description: "Crea tarjetas con preguntas y respóndelas sin mirar apuntes. Fuerza a tu cerebro a recordar.",
+      steps: ["Divide el tema", "Crea preguntas", "Responde sin mirar", "Repite las falladas"],
+      type: "active-recall",
+      course: calc1._id,
+      estimatedMinutes: 25,
+    },
+    {
+      title: "Resolución de Problemas",
+      description: "La práctica hace al maestro. Resuelve ejercicios cronometrados para simular el examen.",
+      steps: ["Lee el problema", "Identifica datos", "Plantea la solución", "Verifica tu respuesta"],
+      type: "problem-solving",
+      course: calc1._id,
+      estimatedMinutes: 45,
+    },
+    {
+      title: "Técnica Pomodoro",
+      description: "Estudia en bloques de 25 minutos con 5 de descanso. Ideal para mantener la concentración.",
+      steps: ["Elige una tarea", "Estudia 25 min", "Descansa 5 min", "Repite cada 4 ciclos toma un descanso largo"],
+      type: "pomodoro",
+      course: calc1._id,
+      estimatedMinutes: 25,
+    }
+  ]);
 
   console.log("📝 Creando autoevaluaciones (Una por cada semana)...");
   
@@ -114,7 +129,7 @@ const run = async () => {
     
     // Creamos un Quiz por semana
     const quiz = await Quiz.create({
-      title: `Quiz Rápido: ${topic.name.split(': ')[1]}`, // Ej: "Quiz Rápido: Límites y Continuidad"
+      title: `Quiz Rápido: ${topic.name.split(': ')[1]}`,
       description: `Comprueba tu comprensión de la ${topic.name}.`,
       topic: topic._id,
       course: calc1._id,
@@ -122,7 +137,7 @@ const run = async () => {
       estimatedMinutes: 5,
     });
 
-    // Agregamos 1 pregunta de ejemplo (para que no esté vacío)
+    // Agregamos 1 pregunta de ejemplo
     const q1 = await Question.create({
       quiz: quiz._id,
       statement: `[Pregunta de prueba] ¿Cuál es el concepto principal de la ${topic.name}?`,
