@@ -30,7 +30,7 @@ export const register = async (req, res, next) => {
       role: role || "student",
       bio: role === "mentor" ? bio : "",
       expertise: role === "mentor" ? expertise : [],
-      avatar: avatar || "avatar_1" // Guardamos el avatar elegido
+      avatar: avatar || "bottts|utec|b6e3f4" // <-- Actualizado al nuevo formato
     });
 
     res.status(201).json({
@@ -67,7 +67,7 @@ export const login = async (req, res, next) => {
       role: user.role,
       bio: user.bio,
       expertise: user.expertise,
-      avatar: user.avatar || "avatar_1",
+      avatar: user.avatar || "bottts|utec|b6e3f4", // <-- Actualizado
       token: generateToken(user._id),
     });
   } catch (error) {
@@ -83,17 +83,16 @@ export const getMe = async (req, res) => {
 // @route   PUT /api/auth/profile
 export const updateProfile = async (req, res, next) => {
   try {
-    // Usamos findByIdAndUpdate con { new: true } para que devuelva el usuario actualizado
     const updatedUser = await User.findByIdAndUpdate(
       req.user._id,
       {
         $set: {
           name: req.body.name,
           bio: req.body.bio,
-          avatar: req.body.avatar, // Aquí forzamos que se cree/actualice el campo
+          avatar: req.body.avatar,
         },
       },
-      { new: true, runValidators: true } // new: true devuelve el doc modificado
+      { new: true, runValidators: true }
     );
 
     if (!updatedUser) {
@@ -130,11 +129,43 @@ export const forgotPassword = async (req, res, next) => {
       return res.status(404).json({ message: "No existe un usuario con ese correo" });
     }
 
-    // Asignamos la nueva contraseña (el modelo User la encriptará automáticamente por el pre-save)
     user.password = newPassword;
     await user.save();
 
     res.json({ message: "Contraseña actualizada correctamente. Ya puedes iniciar sesión." });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @route   PUT /api/auth/become-mentor
+export const becomeMentor = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user._id);
+    if (!user) return res.status(404).json({ message: "Usuario no encontrado" });
+    
+    if (user.role === "mentor") {
+      return res.status(400).json({ message: "Ya eres un mentor" });
+    }
+
+    // Cambiamos el rol y guardamos la bio y cursos enviados
+    user.role = "mentor";
+    user.bio = req.body.bio || "¡Hola! Estoy aquí para ayudar.";
+    user.expertise = req.body.expertise || ["Cálculo 1", "Física 1"];
+
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      cycle: updatedUser.cycle,
+      role: updatedUser.role,
+      bio: updatedUser.bio,
+      expertise: updatedUser.expertise,
+      avatar: updatedUser.avatar,
+      token: req.headers.authorization.split(" ")[1],
+    });
   } catch (error) {
     next(error);
   }

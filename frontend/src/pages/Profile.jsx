@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import api from "../services/api";
+import { authService } from "../services/authService"; // <-- Importamos el servicio
 import { AVATAR_STYLES, BG_COLORS, getAvatarUrl } from "../utils/avatars";
 
 export default function Profile() {
@@ -41,6 +42,11 @@ export default function Profile() {
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState({ text: "", type: "" });
 
+  // Estados para la postulación a mentor
+  const [showMentorForm, setShowMentorForm] = useState(false);
+  const [mentorBio, setMentorBio] = useState("");
+  const [mentorCourses, setMentorCourses] = useState(["Cálculo 1"]);
+
   const handleNextVariation = (styleId) => {
     const newSeed = Math.random().toString(36).substring(7);
     setSeeds(prev => ({
@@ -79,6 +85,24 @@ export default function Profile() {
     } catch (error) {
       console.error(error);
       setMessage({ text: "Error al actualizar el perfil ❌", type: "error" });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleBecomeMentor = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    try {
+      const data = await authService.becomeMentor({
+        bio: mentorBio,
+        expertise: mentorCourses
+      });
+      setUser(data); // Actualizamos el contexto global
+      // Forzamos recarga para que el Navbar y rutas cambien al nuevo rol
+      window.location.href = "/mentor-panel"; 
+    } catch (error) {
+      alert(error.response?.data?.message || "Error al postularse");
     } finally {
       setLoading(false);
     }
@@ -188,6 +212,52 @@ export default function Profile() {
           {loading ? "Guardando cambios..." : "Guardar Cambios"}
         </button>
       </form>
+
+      {/* ========================================== */}
+      {/* TARJETA PARA POSTULARSE A MENTOR */}
+      {/* Solo se muestra si el rol es "student" */}
+      {/* ========================================== */}
+      {user?.role === "student" && (
+        <div className="card mt-8 bg-gradient-to-r from-emerald-950 to-slate-900 border border-emerald-800">
+          <div className="flex items-center gap-3 mb-2">
+            <span className="text-3xl">🎓</span>
+            <h2 className="text-lg font-bold text-emerald-300">¿Ya pasaste los cursos filtro?</h2>
+          </div>
+          <p className="text-sm text-slate-300 mb-4">
+            Postúlate como mentor para ayudar a los nuevos ingresos de UTEC. Comparte tu experiencia y refuerza tus conocimientos.
+          </p>
+
+          {!showMentorForm ? (
+            <button 
+              onClick={() => setShowMentorForm(true)}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-2 px-4 rounded-lg transition"
+            >
+              Quiero ser Mentor
+            </button>
+          ) : (
+            <form onSubmit={handleBecomeMentor} className="bg-slate-900/50 p-4 rounded-lg border border-emerald-900/50 mt-4 space-y-4">
+              <div>
+                <label className="text-sm text-slate-300">Cuéntanos sobre ti (Biografía)</label>
+                <textarea
+                  className="input-field mt-1 h-20 resize-none"
+                  value={mentorBio}
+                  onChange={(e) => setMentorBio(e.target.value)}
+                  placeholder="Ej: Estudiante de 5to ciclo, me gusta explicar con ejemplos prácticos."
+                  required
+                />
+              </div>
+              <div className="flex gap-2">
+                <button type="submit" disabled={loading} className="bg-emerald-600 hover:bg-emerald-500 text-white text-sm py-2 px-4 rounded-lg flex-1">
+                  {loading ? "Postulando..." : "Enviar Postulación"}
+                </button>
+                <button type="button" onClick={() => setShowMentorForm(false)} className="bg-slate-700 hover:bg-slate-600 text-white text-sm py-2 px-4 rounded-lg">
+                  Cancelar
+                </button>
+              </div>
+            </form>
+          )}
+        </div>
+      )}
     </div>
   );
 }
