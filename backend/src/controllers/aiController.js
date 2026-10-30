@@ -73,10 +73,10 @@ export const generateCustomSession = async (req, res, next) => {
       maxResponseTokens = 1000;
     } else if (detailLevel === "completo") {
       detailInstruction = "Analiza TODO el material minuciosamente. Abarca cada subtema, fórmula y ejemplo.";
-      maxResponseTokens = 2500; // Más espacio para responder
+      maxResponseTokens = 1500; // Más espacio para responder
     } else {
       detailInstruction = "Haz una guía paso a paso balanceada. Explica los conceptos clave y da ejemplos prácticos.";
-      maxResponseTokens = 2000;
+      maxResponseTokens = 1000;
     }
 
     const systemPrompt = `

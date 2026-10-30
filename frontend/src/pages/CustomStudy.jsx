@@ -50,8 +50,8 @@ export default function CustomStudy() {
 
       // LÓGICA DINÁMICA: Cortamos el texto según la profundidad elegida
       let charLimit = 12000; 
-      if (detailLevel === "resumido") charLimit = 6000;
-      if (detailLevel === "completo") charLimit = 25000;
+      if (detailLevel === "resumido") charLimit = 3000;
+      if (detailLevel === "completo") charLimit = 8000;
 
       const response = await api.post("/auth/ai/custom-session", {
         materialText: extractedText.slice(0, charLimit), // <-- Aplicamos el límite
