@@ -7,24 +7,30 @@ import api from "../services/api";
 import Loader from "../components/common/Loader";
 import AIChat from "../components/ai/AIChat";
 
-
 export default function TopicDetail() {
   const { id } = useParams(); // ID del tema
   const navigate = useNavigate();
   const [topic, setTopic] = useState(null);
   const [technique, setTechnique] = useState(null);
+  const [allTechniques, setAllTechniques] = useState([]); // <-- Nuevo estado
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     Promise.all([
       api.get(`/courses/topics/${id}`).then(r => r.data).catch(() => null),
-      api.get(`/techniques?topic=${id}`).then(r => r.data),
+      api.get(`/techniques`).then(r => r.data), // <-- Traemos TODAS las técnicas
       api.get(`/quizzes?topic=${id}`).then(r => r.data)
     ])
       .then(([topicData, techData, quizData]) => {
         setTopic(topicData || { name: "Detalle del tema", description: "Estudiando...", content: "", course: "" }); 
-        setTechnique(techData && techData.length > 0 ? techData[0] : null);
+        
+        // Si hay técnicas, seleccionamos la primera por defecto
+        if (techData && techData.length > 0) {
+          setTechnique(techData[0]);
+        }
+        setAllTechniques(techData || []); // <-- Guardamos todas las técnicas
+        
         setQuiz(quizData && quizData.length > 0 ? quizData[0] : null);
       })
       .catch(console.error)
@@ -47,26 +53,38 @@ export default function TopicDetail() {
         {/* ====== TARJETA DE LA TÉCNICA RECOMENDADA ====== */}
         <div className="card bg-gradient-to-r from-purple-950 to-slate-900 border-purple-800">
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
+            <div className="w-full">
+              <div className="flex items-center gap-2 mb-2">
                 <span className="text-2xl">🧠</span>
                 <h2 className="text-sm font-bold text-purple-300 uppercase tracking-wider">
-                  Técnica recomendada para este tema
+                  Técnica recomendada
                 </h2>
               </div>
+              
+              {/* SELECTOR DE TÉCNICA */}
+              <select 
+                value={technique?._id || ""}
+                onChange={(e) => {
+                  const selected = allTechniques.find(t => t._id === e.target.value);
+                  setTechnique(selected);
+                }}
+                className="bg-slate-900 border border-purple-700 text-purple-100 text-lg font-bold rounded-lg px-4 py-2 w-full md:w-2/3 focus:outline-none focus:ring-2 focus:ring-purple-500 mb-2"
+              >
+                {allTechniques.map(t => (
+                  <option key={t._id} value={t._id}>{t.title}</option>
+                ))}
+              </select>
+
               {technique ? (
-                <>
-                  <h3 className="font-bold text-slate-100 text-xl mb-1">{technique.title}</h3>
-                  <p className="text-sm text-slate-300">{technique.description}</p>
-                </>
+                <p className="text-sm text-slate-300 mt-2">{technique.description}</p>
               ) : (
-                <p className="text-sm text-slate-400 mt-2">Aún no hay una técnica sugerida para este tema.</p>
+                <p className="text-sm text-slate-400 mt-2">Selecciona una técnica.</p>
               )}
             </div>
             
             {technique && (
               <Link to="/techniques" className="btn-secondary text-xs whitespace-nowrap">
-                Ver detalles de la técnica
+                Ver detalles
               </Link>
             )}
           </div>
@@ -133,7 +151,15 @@ export default function TopicDetail() {
         </div>
 
       </div>
-      <AIChat topicName={topic?.name} techniqueName={technique?.title} />
+
+      {/* CHAT DE IA FLOTANTE */}
+      <AIChat 
+        key={technique?._id} // Reinicia el chat si cambia la técnica
+        topicName={topic?.name} 
+        techniqueName={technique?.title || "General"} 
+        allTechniques={allTechniques} 
+        onTechniqueChange={setTechnique} 
+      />
 
     </div>
   );

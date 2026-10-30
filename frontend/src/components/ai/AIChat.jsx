@@ -4,12 +4,12 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import api from "../../services/api";
 
-export default function AIChat({ topicName, techniqueName }) {
+export default function AIChat({ topicName, techniqueName, allTechniques, onTechniqueChange }) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      content: `¡Hola! Soy tu tutor de IA. Veo que estás estudiando **${topicName}** con la técnica **${techniqueName}**. ¿En qué te puedo ayudar hoy?`
+      content: `¡Hola! Soy tu tutor de IA. Veo que estás estudiando **${topicName}**. ¿En qué te puedo ayudar hoy?`
     }
   ]);
   const [input, setInput] = useState("");
@@ -25,7 +25,6 @@ export default function AIChat({ topicName, techniqueName }) {
     setLoading(true);
 
     try {
-      // Llamamos a la ruta del backend que crearemos después
       const response = await api.post("/ai/chat", {
         topicName,
         techniqueName,
@@ -46,16 +45,35 @@ export default function AIChat({ topicName, techniqueName }) {
       {/* Ventana del Chat */}
       {isOpen && (
         <div className="bg-slate-900 border border-purple-800 rounded-2xl shadow-2xl w-80 md:w-96 mb-4 overflow-hidden flex flex-col h-[500px]">
-          {/* Header del Chat */}
-          <div className="bg-purple-900 p-4 flex justify-between items-center text-white">
-            <div className="flex items-center gap-2">
-              <span className="text-2xl">🤖</span>
-              <div>
+          
+          {/* Header del Chat con Selector de Técnica */}
+          <div className="bg-purple-900 p-4 flex flex-col gap-2 text-white">
+            <div className="flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <span className="text-2xl">🤖</span>
                 <h3 className="font-bold text-sm">Tutor IA</h3>
-                <p className="text-[10px] text-purple-300">Técnica: {techniqueName}</p>
               </div>
+              <button onClick={() => setIsOpen(false)} className="text-purple-300 hover:text-white">✕</button>
             </div>
-            <button onClick={() => setIsOpen(false)} className="text-purple-300 hover:text-white">✕</button>
+            
+            {/* Selector dentro del chat */}
+            <div className="bg-purple-950/50 p-2 rounded-lg border border-purple-800/50">
+              <label className="text-[10px] text-purple-300 uppercase font-bold mb-1 block">
+                Cambiar técnica:
+              </label>
+              <select
+                value={techniqueName || ""}
+                onChange={(e) => {
+                  const selected = allTechniques.find(t => t.title === e.target.value);
+                  if (selected && onTechniqueChange) onTechniqueChange(selected);
+                }}
+                className="w-full bg-slate-950 border border-purple-700 text-white text-xs rounded p-1.5 focus:outline-none"
+              >
+                {allTechniques.map(t => (
+                  <option key={t._id} value={t.title}>{t.title}</option>
+                ))}
+              </select>
+            </div>
           </div>
 
           {/* Área de Mensajes */}
@@ -104,7 +122,7 @@ export default function AIChat({ topicName, techniqueName }) {
         </div>
       )}
 
-      {/* Botón Flotante para abrir */}
+      {/* Botón Flotante */}
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
