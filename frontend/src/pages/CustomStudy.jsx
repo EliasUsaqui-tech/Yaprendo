@@ -6,8 +6,7 @@ import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import api from "../services/api";
 import pdfToText from "react-pdftotext";
-import rehypeRaw from "rehype-raw"; // <-- Nueva importación
-
+import rehypeRaw from "rehype-raw";
 
 export default function CustomStudy() {
   const [file, setFile] = useState(null);
@@ -56,7 +55,7 @@ export default function CustomStudy() {
       if (detailLevel === "completo") charLimit = 8000;
 
       const response = await api.post("/auth/ai/custom-session", {
-        materialText: extractedText.slice(0, charLimit), // <-- Aplicamos el límite
+        materialText: extractedText.slice(0, charLimit),
         technique: selectedTechnique,
         detailLevel: detailLevel
       });
@@ -69,7 +68,6 @@ export default function CustomStudy() {
       setLoading(false);
     }
   };
-
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
@@ -141,14 +139,24 @@ export default function CustomStudy() {
             <h2 className="text-xl font-bold text-slate-100 mb-4 flex items-center gap-2">
               📖 Guía de Estudio ({selectedTechnique})
             </h2>
-            {/* Agregamos overflow-x-auto para que las fórmulas largas tengan scroll y no rompan el diseño */}
+            
             <div className="prose prose-invert prose-sm max-w-none text-slate-300 overflow-x-auto">
               <ReactMarkdown 
                 remarkPlugins={[remarkMath, remarkGfm]} 
                 rehypePlugins={[rehypeKatex, rehypeRaw]}
                 components={{
-                  // Mejorar el espaciado de los párrafos
-                  p: ({ node, ...props }) => <p className="mb-4 whitespace-pre-wrap leading-relaxed" {...props} />,
+                  // TRUCO: Limpiamos las etiquetas HTML si la IA las llegara a escribir
+                  p: ({ node, ...props }) => {
+                    if (typeof props.children === 'string') {
+                      const cleanText = props.children
+                        .replace(/<ul>/g, '\n')
+                        .replace(/<\/ul>/g, '\n')
+                        .replace(/<li>/g, '\n- ')
+                        .replace(/<\/li>/g, '');
+                      return <p className="mb-4 whitespace-pre-wrap leading-relaxed" {...props}>{cleanText}</p>;
+                    }
+                    return <p className="mb-4 whitespace-pre-wrap leading-relaxed" {...props} />;
+                  },
                   // Darle estilo a las tablas generadas por la IA
                   table: ({ node, ...props }) => (
                     <div className="overflow-x-auto my-6 rounded-lg border border-slate-700">

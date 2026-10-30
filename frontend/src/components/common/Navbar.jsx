@@ -62,7 +62,7 @@ export default function Navbar() {
 
             {/* COMPARTIDOS */}
             <Link to="/techniques" className={linkClass("/techniques")}>Técnicas</Link>
-            <Link to="/mentors" className={linkClass("/mentors")}>Directorio</Link>
+            <Link to="/mentors" className={linkClass("/mentors")}>Mentores</Link>
 
             {/* BOTÓN EDITAR PERFIL */}
             <Link 
