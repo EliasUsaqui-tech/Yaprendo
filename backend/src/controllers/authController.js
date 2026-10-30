@@ -14,6 +14,15 @@ export const register = async (req, res, next) => {
     if (!name || !email || !password) {
       return res.status(400).json({ message: "Faltan campos obligatorios" });
     }
+        // ==========================================
+    // NUEVA VALIDACIÓN: Solo correos @utec.edu.pe
+    // ==========================================
+    const allowedDomain = "@utec.edu.pe";
+    if (!email.toLowerCase().endsWith(allowedDomain)) {
+      return res.status(400).json({ 
+        message: `El correo debe ser institucional y terminar en ${allowedDomain}` 
+      });
+    }
 
     const exists = await User.findOne({ email });
     if (exists) {

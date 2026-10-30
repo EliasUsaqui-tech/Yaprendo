@@ -41,6 +41,12 @@ export default function Register() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    
+    // Validación en el frontend: Solo correos @utec.edu.pe
+    if (!form.email.toLowerCase().endsWith("@utec.edu.pe")) {
+      return setError("Solo se permiten correos institucionales (@utec.edu.pe)");
+    }
+
     setLoading(true);
     
     const payload = { ...form };
