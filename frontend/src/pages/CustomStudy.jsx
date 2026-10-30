@@ -13,7 +13,19 @@ export default function CustomStudy() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
 
-  const defaultTechnique = localStorage.getItem("recommended_technique") || "Active Recall";
+  // 1. Obtenemos la técnica del test y la traducimos
+  const techFromTest = localStorage.getItem("recommended_technique");
+  
+  const getTechniqueName = (tech) => {
+    if (tech === "feynman") return "Feynman";
+    if (tech === "active-recall") return "Active Recall";
+    if (tech === "problem-solving") return "Resolución de Problemas";
+    if (tech === "pomodoro") return "Pomodoro";
+    return "Active Recall"; // Por defecto
+  };
+
+  const defaultTechnique = getTechniqueName(techFromTest);
+
   const [selectedTechnique, setSelectedTechnique] = useState(defaultTechnique);
   const [detailLevel, setDetailLevel] = useState("detallado");
 
@@ -37,7 +49,7 @@ export default function CustomStudy() {
       }
 
       const response = await api.post("/auth/ai/custom-session", {
-        materialText: extractedText.slice(0, 8000), // Límite de caracteres
+        materialText: extractedText.slice(0, 8000), // Límite de caracteres para no saturar
         technique: selectedTechnique,
         detailLevel: detailLevel
       });
