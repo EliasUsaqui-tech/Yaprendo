@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import logo from "../../assets/logoYaprendo.png";
+import logo from "../../assets/logo2.jpg";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
