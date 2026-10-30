@@ -8,14 +8,15 @@ import Loader from "../components/common/Loader";
 import AIChat from "../components/ai/AIChat";
 
 export default function TopicDetail() {
-  const { id } = useParams(); // ID del tema
+  const { id } = useParams(); 
   const navigate = useNavigate();
   const [topic, setTopic] = useState(null);
   const [technique, setTechnique] = useState(null);
-  const [allTechniques, setAllTechniques] = useState([]); // <-- Nuevo estado
+  const [allTechniques, setAllTechniques] = useState([]); 
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
-    // Función para obtener el color según el tipo de técnica
+
+  // Función para obtener el color según el tipo de técnica
   const getTechColor = (type) => {
     switch (type) {
       case "feynman": return { border: "border-blue-500", bg: "bg-blue-950", text: "text-blue-300", gradient: "from-blue-950 to-slate-900" };
@@ -31,17 +32,16 @@ export default function TopicDetail() {
   useEffect(() => {
     Promise.all([
       api.get(`/courses/topics/${id}`).then(r => r.data).catch(() => null),
-      api.get(`/techniques`).then(r => r.data), // <-- Traemos TODAS las técnicas
+      api.get(`/techniques`).then(r => r.data),
       api.get(`/quizzes?topic=${id}`).then(r => r.data)
     ])
       .then(([topicData, techData, quizData]) => {
         setTopic(topicData || { name: "Detalle del tema", description: "Estudiando...", content: "", course: "" }); 
         
-        // Si hay técnicas, seleccionamos la primera por defecto
         if (techData && techData.length > 0) {
           setTechnique(techData[0]);
         }
-        setAllTechniques(techData || []); // <-- Guardamos todas las técnicas
+        setAllTechniques(techData || []); 
         
         setQuiz(quizData && quizData.length > 0 ? quizData[0] : null);
       })
@@ -63,12 +63,12 @@ export default function TopicDetail() {
       <div className="space-y-6">
         
         {/* ====== TARJETA DE LA TÉCNICA RECOMENDADA ====== */}
-        <div className="card bg-gradient-to-r from-purple-950 to-slate-900 border-purple-800">
+        <div className={`card bg-gradient-to-r ${techColor.gradient} ${techColor.border} transition-colors duration-500`}>
           <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
             <div className="w-full">
               <div className="flex items-center gap-2 mb-2">
                 <span className="text-2xl">🧠</span>
-                <h2 className="text-sm font-bold text-purple-300 uppercase tracking-wider">
+                <h2 className={`text-sm font-bold ${techColor.text} uppercase tracking-wider transition-colors duration-500`}>
                   Técnica recomendada
                 </h2>
               </div>
@@ -80,7 +80,7 @@ export default function TopicDetail() {
                   const selected = allTechniques.find(t => t._id === e.target.value);
                   setTechnique(selected);
                 }}
-                className="bg-slate-900 border border-purple-700 text-purple-100 text-lg font-bold rounded-lg px-4 py-2 w-full md:w-2/3 focus:outline-none focus:ring-2 focus:ring-purple-500 mb-2"
+                className="bg-slate-900 border border-slate-700 text-slate-100 text-lg font-bold rounded-lg px-4 py-2 w-full md:w-2/3 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
               >
                 {allTechniques.map(t => (
                   <option key={t._id} value={t._id}>{t.title}</option>
@@ -102,12 +102,12 @@ export default function TopicDetail() {
           </div>
 
           {technique?.steps && technique.steps.length > 0 && (
-            <div className="mt-4 bg-slate-900/50 p-4 rounded-lg border border-purple-900/50">
-              <p className="text-xs font-semibold text-purple-300 mb-2">¿Cómo aplicarla?</p>
+            <div className={`mt-4 ${techColor.bg}/50 p-4 rounded-lg border ${techColor.border}/50 transition-colors duration-500`}>
+              <p className={`text-xs font-semibold ${techColor.text} mb-2`}>¿Cómo aplicarla?</p>
               <ul className="grid grid-cols-1 md:grid-cols-2 gap-2 text-sm text-slate-400">
                 {technique.steps.map((step, i) => (
                   <li key={i} className="flex items-start gap-2">
-                    <span className="text-purple-500 font-bold">{i + 1}.</span> {step}
+                    <span className={`font-bold ${techColor.text}`}>{i + 1}.</span> {step}
                   </li>
                 ))}
               </ul>
@@ -164,13 +164,13 @@ export default function TopicDetail() {
 
       </div>
 
-      {/* CHAT DE IA FLOTANTE */}
+      {/* CHAT DE IA FLOTANTE (Sin la key para que no se cierre) */}
       <AIChat 
-        key={technique?._id} // Reinicia el chat si cambia la técnica
         topicName={topic?.name} 
         techniqueName={technique?.title || "General"} 
         allTechniques={allTechniques} 
-        onTechniqueChange={setTechnique} 
+        onTechniqueChange={setTechnique}
+        techColor={techColor}
       />
 
     </div>

@@ -4,7 +4,14 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import api from "../../services/api";
 
-export default function AIChat({ topicName, techniqueName, allTechniques, onTechniqueChange, techColor }) {
+// Le damos un valor por defecto a techColor para que nunca falle
+export default function AIChat({ 
+  topicName, 
+  techniqueName, 
+  allTechniques, 
+  onTechniqueChange, 
+  techColor = { border: "border-purple-500", bg: "bg-purple-900", text: "text-purple-300", gradient: "from-purple-600 to-blue-600" } 
+}) {
   const [isOpen, setIsOpen] = useState(false);
   const [messages, setMessages] = useState([
     {
