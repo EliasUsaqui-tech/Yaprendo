@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
-import { useParams, Link } from "react-router-dom";
+import { useParams, Link, useNavigate } from "react-router-dom";
 import { courseService } from "../services/courseService";
 import { quizService } from "../services/quizService";
 import Loader from "../components/common/Loader";
 
 export default function CourseDetail() {
   const { id } = useParams();
+  const navigate = useNavigate();
   const [course, setCourse] = useState(null);
   const [topics, setTopics] = useState([]);
   const [quizzes, setQuizzes] = useState([]);
@@ -44,6 +45,29 @@ export default function CourseDetail() {
   if (!course)
     return <p className="text-center py-12 text-slate-300">Curso no encontrado</p>;
 
+  // ==========================================
+  // VALIDACIÓN DE SEGURIDAD (CURSOS BLOQUEADOS)
+  // ==========================================
+  const lockedCourses = ["CAL1", "FIS1"];
+  const courseCode = course.code ? course.code.toUpperCase() : "";
+
+  if (lockedCourses.includes(courseCode)) {
+    return (
+      <div className="max-w-2xl mx-auto px-4 py-20 text-center">
+        <span className="text-6xl mb-4 block">🔒</span>
+        <h1 className="text-3xl font-bold text-slate-100 mb-4">Contenido Próximamente</h1>
+        <p className="text-slate-400 mb-8">
+          El curso <strong>{course.name}</strong> aún no está disponible para autoevaluación. 
+          Estamos trabajando para traerte el mejor contenido.
+        </p>
+        <Link to="/courses" className="btn-primary px-6 py-2 inline-block">
+          Volver a cursos disponibles
+        </Link>
+      </div>
+    );
+  }
+
+  // Si pasa la validación, se muestra el contenido normal
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <Link to="/courses" className="text-sm text-blue-400 hover:underline">
@@ -55,7 +79,6 @@ export default function CourseDetail() {
       </h1>
       <p className="text-slate-400 mb-6">{course.description}</p>
 
-      {/* BANNER DE MODO ENFOQUE */}
       {activeTechnique && (
         <div className="bg-gradient-to-r from-purple-900 to-blue-900 border border-purple-500 rounded-xl p-4 mb-8 flex justify-between items-center shadow-lg">
           <div className="flex items-center gap-4">
@@ -63,7 +86,7 @@ export default function CourseDetail() {
             <div>
               <h3 className="text-lg font-bold text-white">Modo Enfoque Activado</h3>
               <p className="text-sm text-purple-200">
-                Estás aplicando la <strong>{activeTechnique.title}</strong> en este curso. Sigue los pasos y realiza las autoevaluaciones.
+                Estás aplicando la <strong>{activeTechnique.title}</strong> en este curso.
               </p>
             </div>
           </div>
@@ -77,7 +100,6 @@ export default function CourseDetail() {
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        
         <div className="card">
           <h2 className="font-semibold text-slate-100 mb-4 flex items-center gap-2">
             📖 Temas del curso
