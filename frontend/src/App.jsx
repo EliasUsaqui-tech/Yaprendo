@@ -18,6 +18,8 @@ import ForgotPassword from "./pages/ForgotPassword";
 import StudyTest from "./pages/StudyTest";
 import Recommendation from "./pages/Recommendation";
 import TopicDetail from "./pages/TopicDetail";
+import CustomStudy from "./pages/CustomStudy";
+
 
 function Layout({ children }) {
   return (
@@ -40,6 +42,10 @@ export default function App() {
           <Route
             path="/topics/:id"
             element={<ProtectedRoute><Layout><TopicDetail /></Layout></ProtectedRoute>}
+          />
+          <Route
+            path="/custom-study"
+            element={<ProtectedRoute><Layout><CustomStudy /></Layout></ProtectedRoute>}
           />
           
           <Route

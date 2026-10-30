@@ -11,11 +11,14 @@ import { chatWithAI } from "../controllers/aiController.js"; // <-- Importar
 
 import { protect } from "../middleware/authMiddleware.js";
 
+import { chatWithAI, generateCustomSession } from "../controllers/aiController.js";
+
 const router = Router();
 
 router.post("/register", register);
 router.post("/login", login);
 router.post("/ai/chat", protect, chatWithAI);
+router.post("/ai/custom-session", protect, generateCustomSession); // <-- NUEVA RUTA
 router.get("/me", protect, getMe);
 router.post("/forgot-password", forgotPassword);
 
