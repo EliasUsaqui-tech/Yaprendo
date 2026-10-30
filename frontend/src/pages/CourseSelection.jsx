@@ -11,7 +11,15 @@ export default function CourseSelection() {
   useEffect(() => {
     courseService
       .getAll()
-      .then(setCourses)
+      .then((data) => {
+        // ORDENAMIENTO: Ponemos Fundamentos del Cálculo primero
+        const sortedCourses = data.sort((a, b) => {
+          if (a.code === "FUNCAL") return -1; // FUNCAL va primero
+          if (b.code === "FUNCAL") return 1;
+          return 0; // El resto se queda igual
+        });
+        setCourses(sortedCourses);
+      })
       .catch(console.error)
       .finally(() => setLoading(false));
   }, []);
