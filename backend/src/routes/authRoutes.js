@@ -7,7 +7,6 @@ import {
   forgotPassword, 
   becomeMentor 
 } from "../controllers/authController.js";
-import { chatWithAI } from "../controllers/aiController.js"; // <-- Importar
 
 import { protect } from "../middleware/authMiddleware.js";
 
