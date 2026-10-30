@@ -82,7 +82,7 @@ export const generateCustomSession = async (req, res, next) => {
       1. Devuelve la respuesta en formato Markdown puro.
       2. PARA FÓRMULAS MATEMÁTICAS: Es OBLIGATORIO usar delimitadores de bloque LaTeX ($$...$$) para fórmulas grandes o de varias líneas, y delimitadores simples ($...$) solo para variables en medio del texto (ej. $n^2$). 
       3. NUNCA uses símbolos matemáticos en texto plano. Si hay una ecuación, debe ir entre $$ o $.
-      4. Usa tablas Markdown solo si es estrictamente necesario.
+      4. IMPORTANTE: Si generas una tabla Markdown, evita usar fórmulas LaTeX complejas dentro de las celdas. Si necesitas poner una fórmula, hazlo de forma simple o ponla fuera de la tabla.
       5. Sé claro, motivador y estructurado.
       6. La guía debe estar basada ÚNICAMENTE en el texto proporcionado.
     `;

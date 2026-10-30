@@ -139,8 +139,16 @@ export default function CustomStudy() {
                 remarkPlugins={[remarkMath, remarkGfm]} 
                 rehypePlugins={[rehypeKatex]}
                 components={{
-                  // Aseguramos que los párrafos tengan un buen espaciado y salto de línea
+                  // Mejorar el espaciado de los párrafos
                   p: ({ node, ...props }) => <p className="mb-4 whitespace-pre-wrap leading-relaxed" {...props} />,
+                  // Darle estilo a las tablas generadas por la IA
+                  table: ({ node, ...props }) => (
+                    <div className="overflow-x-auto my-6 rounded-lg border border-slate-700">
+                      <table className="w-full text-left border-collapse text-sm" {...props} />
+                    </div>
+                  ),
+                  th: ({ node, ...props }) => <th className="bg-slate-800 p-3 border-b border-slate-600 font-bold" {...props} />,
+                  td: ({ node, ...props }) => <td className="p-3 border-b border-slate-700/50 align-top" {...props} />
                 }}
               >
                 {result.summary}
