@@ -11,9 +11,9 @@ import Question from "../models/Question.js";
 const run = async () => {
   await connectDB();
 
-  console.log("Limpiando colecciones...");
+  console.log("Limpiando cursos, temas, técnicas y quizzes...");
+  // NO borramos User.deleteMany() para no perder a los usuarios registrados
   await Promise.all([
-    User.deleteMany(),
     Course.deleteMany(),
     Topic.deleteMany(),
     StudyTechnique.deleteMany(),
@@ -21,18 +21,28 @@ const run = async () => {
     Question.deleteMany(),
   ]);
 
-  console.log("Creando usuarios...");
-  await User.create([
-    { name: "Admin UTEC", email: "admin@utec.edu.pe", password: "admin123", cycle: "egresado", role: "admin" },
-    { name: "Leonardo Autodidacta", email: "leonardo@utec.edu.pe", password: "leonardo123", cycle: "1", role: "student" },
-    { name: "Andrea Mentor", email: "andrea@utec.edu.pe", password: "andrea123", cycle: "6", role: "mentor", bio: "Estudiante de 6to ciclo, me gusta explicar con ejemplos prácticos.", expertise: ["Cálculo 1", "Fundamentos del Cálculo"] }
-  ]);
+  console.log("Verificando usuarios de prueba...");
+  // Solo creamos los usuarios si no existen en la base de datos
+  const adminExists = await User.findOne({ email: "admin@utec.edu.pe" });
+  if (!adminExists) {
+    await User.create({ name: "Admin UTEC", email: "admin@utec.edu.pe", password: "admin123", cycle: "egresado", role: "admin" });
+  }
+
+  const leoExists = await User.findOne({ email: "leonardo@utec.edu.pe" });
+  if (!leoExists) {
+    await User.create({ name: "Leonardo Autodidacta", email: "leonardo@utec.edu.pe", password: "leonardo123", cycle: "1", role: "student" });
+  }
+
+  const andreaExists = await User.findOne({ email: "andrea@utec.edu.pe" });
+  if (!andreaExists) {
+    await User.create({ name: "Andrea Mentor", email: "andrea@utec.edu.pe", password: "andrea123", cycle: "6", role: "mentor", bio: "Estudiante de 6to ciclo, me gusta explicar con ejemplos prácticos.", expertise: ["Cálculo 1", "Fundamentos del Cálculo"] });
+  }
 
   console.log("Creando cursos...");
   const calc1 = await Course.create({
     name: "Cálculo 1",
     code: "CAL1",
-    description: "Límites, derivadas e introducción a integrales basados en el sílabo CC1101 (Malla 2021).",
+    description: "Límites, derivadas e introducción a integrales basados en el sílabo CC1101.",
     cycle: "1",
     color: "#1e40af",
   });
@@ -87,7 +97,7 @@ const run = async () => {
   await calc1.save();
 
   // ==========================================
-  // FUNDAMENTOS DEL CÁLCULO (11 Semanas basadas en tus evaluaciones)
+  // FUNDAMENTOS DEL CÁLCULO (11 Semanas)
   // ==========================================
   console.log("📖 Creando las semanas de Fundamentos del Cálculo...");
   
@@ -120,7 +130,7 @@ const run = async () => {
   await fisica.save();
 
   // ==========================================
-  // TÉCNICAS DE ESTUDIO BASE
+  // TÉCNICAS DE ESTUDIO
   // ==========================================
   console.log("🧠 Creando las 4 técnicas de estudio base...");
   
@@ -189,7 +199,7 @@ const run = async () => {
   }
 
   // ==========================================
-  // QUIZZES DE FUNDAMENTOS DEL CÁLCULO (Con preguntas reales de tus PDFs)
+  // QUIZZES DE FUNDAMENTOS DEL CÁLCULO (Basados en tus evaluaciones)
   // ==========================================
   console.log("📝 Creando autoevaluaciones para Fundamentos del Cálculo...");
   
@@ -236,7 +246,7 @@ const run = async () => {
   }
 
   console.log("\nSeed completado con éxito");
-  console.log("Se crearon los cursos: Cálculo 1, Fundamentos del Cálculo y Física 1.");
+  console.log("Se conservaron los usuarios existentes y se actualizaron los cursos.");
   await mongoose.connection.close();
   process.exit(0);
 };
