@@ -48,8 +48,13 @@ export default function CustomStudy() {
         throw new Error("El PDF no tiene suficiente texto o está escaneado como imagen.");
       }
 
+      // LÓGICA DINÁMICA: Cortamos el texto según la profundidad elegida
+      let charLimit = 12000; 
+      if (detailLevel === "resumido") charLimit = 6000;
+      if (detailLevel === "completo") charLimit = 25000;
+
       const response = await api.post("/auth/ai/custom-session", {
-        materialText: extractedText.slice(0, 30000), // Límite de caracteres para no saturar
+        materialText: extractedText.slice(0, charLimit), // <-- Aplicamos el límite
         technique: selectedTechnique,
         detailLevel: detailLevel
       });
@@ -62,6 +67,7 @@ export default function CustomStudy() {
       setLoading(false);
     }
   };
+
 
   return (
     <div className="max-w-4xl mx-auto px-4 py-8">
