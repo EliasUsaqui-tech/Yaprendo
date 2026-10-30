@@ -27,7 +27,7 @@ export default function Navbar() {
         
         {/* LOGO */}
         <Link to={homePath} className="font-bold text-lg text-blue-400 hover:text-blue-300 transition">
-          UTEC · Acompañamiento
+          Yaprendo
         </Link>
         
         {user && (

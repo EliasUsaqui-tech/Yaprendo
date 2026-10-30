@@ -39,7 +39,7 @@ export default function Login() {
       {/* Recuadro del login */}
       <div className="glass-card rounded-2xl p-8 w-full max-w-md relative z-10 shadow-2xl">
         <h1 className="text-2xl font-bold text-blue-400 mb-1">
-          Acompañamiento UTEC
+          Yaprendo
         </h1>
         <p className="text-slate-300 text-sm mb-6">
           Estudia con método. Autoevalúa tu comprensión real.
