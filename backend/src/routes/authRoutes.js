@@ -13,6 +13,7 @@ const router = Router();
 
 router.post("/register", register);
 router.post("/login", login);
+router.post("/ai/chat", protect, chatWithAI);
 router.get("/me", protect, getMe);
 router.post("/forgot-password", forgotPassword);
 

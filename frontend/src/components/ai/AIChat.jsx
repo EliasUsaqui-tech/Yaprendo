@@ -1,0 +1,118 @@
+import { useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
+import api from "../../services/api";
+
+export default function AIChat({ topicName, techniqueName }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [messages, setMessages] = useState([
+    {
+      role: "assistant",
+      content: `¡Hola! Soy tu tutor de IA. Veo que estás estudiando **${topicName}** con la técnica **${techniqueName}**. ¿En qué te puedo ayudar hoy?`
+    }
+  ]);
+  const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSend = async (e) => {
+    e.preventDefault();
+    if (!input.trim()) return;
+
+    const userMessage = { role: "user", content: input };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+    setLoading(true);
+
+    try {
+      // Llamamos a la ruta del backend que crearemos después
+      const response = await api.post("/ai/chat", {
+        topicName,
+        techniqueName,
+        history: messages,
+        userMessage: input
+      });
+      
+      setMessages((prev) => [...prev, { role: "assistant", content: response.data.reply }]);
+    } catch (error) {
+      setMessages((prev) => [...prev, { role: "assistant", content: "Lo siento, tuve un problema de conexión. ¿Podemos intentarlo de nuevo?" }]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+      {/* Ventana del Chat */}
+      {isOpen && (
+        <div className="bg-slate-900 border border-purple-800 rounded-2xl shadow-2xl w-80 md:w-96 mb-4 overflow-hidden flex flex-col h-[500px]">
+          {/* Header del Chat */}
+          <div className="bg-purple-900 p-4 flex justify-between items-center text-white">
+            <div className="flex items-center gap-2">
+              <span className="text-2xl">🤖</span>
+              <div>
+                <h3 className="font-bold text-sm">Tutor IA</h3>
+                <p className="text-[10px] text-purple-300">Técnica: {techniqueName}</p>
+              </div>
+            </div>
+            <button onClick={() => setIsOpen(false)} className="text-purple-300 hover:text-white">✕</button>
+          </div>
+
+          {/* Área de Mensajes */}
+          <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-slate-950">
+            {messages.map((msg, idx) => (
+              <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                <div className={`max-w-[85%] p-3 rounded-xl text-sm ${
+                  msg.role === "user" 
+                    ? "bg-blue-600 text-white rounded-br-none" 
+                    : "bg-slate-800 text-slate-200 rounded-bl-none border border-slate-700"
+                }`}>
+                  {msg.role === "assistant" ? (
+                    <div className="prose prose-invert prose-sm max-w-none">
+                      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                        {msg.content}
+                      </ReactMarkdown>
+                    </div>
+                  ) : (
+                    msg.content
+                  )}
+                </div>
+              </div>
+            ))}
+            {loading && (
+              <div className="flex justify-start">
+                <div className="bg-slate-800 text-slate-400 p-3 rounded-xl rounded-bl-none text-xs italic animate-pulse">
+                  El tutor está escribiendo...
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Input para escribir */}
+          <form onSubmit={handleSend} className="p-3 bg-slate-900 border-t border-slate-700 flex gap-2">
+            <input
+              type="text"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Hazle una pregunta..."
+              className="flex-1 bg-slate-800 text-white text-sm px-3 py-2 rounded-lg focus:outline-none focus:ring-1 focus:ring-purple-500"
+            />
+            <button type="submit" disabled={loading} className="bg-purple-600 hover:bg-purple-500 text-white p-2 rounded-lg transition disabled:opacity-50">
+              ➤
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Botón Flotante para abrir */}
+      {!isOpen && (
+        <button
+          onClick={() => setIsOpen(true)}
+          className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 rounded-full shadow-2xl hover:scale-110 transition flex items-center gap-2 font-bold"
+        >
+          <span className="text-xl">🤖</span> Preguntar a la IA
+        </button>
+      )}
+    </div>
+  );
+}

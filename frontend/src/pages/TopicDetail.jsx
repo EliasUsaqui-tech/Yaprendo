@@ -5,6 +5,8 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import api from "../services/api";
 import Loader from "../components/common/Loader";
+import AIChat from "../components/ai/AIChat";
+
 
 export default function TopicDetail() {
   const { id } = useParams(); // ID del tema
@@ -131,6 +133,8 @@ export default function TopicDetail() {
         </div>
 
       </div>
+      <AIChat topicName={topic?.name} techniqueName={technique?.title} />
+
     </div>
   );
 }
