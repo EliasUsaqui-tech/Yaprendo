@@ -133,8 +133,16 @@ export default function CustomStudy() {
             <h2 className="text-xl font-bold text-slate-100 mb-4 flex items-center gap-2">
               📖 Guía de Estudio ({selectedTechnique})
             </h2>
-            <div className="prose prose-invert prose-sm max-w-none text-slate-300">
-              <ReactMarkdown remarkPlugins={[remarkMath, remarkGfm]} rehypePlugins={[rehypeKatex]}>
+            {/* Agregamos overflow-x-auto para que las fórmulas largas tengan scroll y no rompan el diseño */}
+            <div className="prose prose-invert prose-sm max-w-none text-slate-300 overflow-x-auto">
+              <ReactMarkdown 
+                remarkPlugins={[remarkMath, remarkGfm]} 
+                rehypePlugins={[rehypeKatex]}
+                components={{
+                  // Aseguramos que los párrafos tengan un buen espaciado y salto de línea
+                  p: ({ node, ...props }) => <p className="mb-4 whitespace-pre-wrap leading-relaxed" {...props} />,
+                }}
+              >
                 {result.summary}
               </ReactMarkdown>
             </div>
