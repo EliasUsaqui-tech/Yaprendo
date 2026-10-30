@@ -3,6 +3,8 @@ import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import api from "../../services/api";
+import remarkGfm from "remark-gfm"; // <-- NUEVA IMPORTACIÓN
+
 
 export default function AIChat({ 
   topicName, 
@@ -110,8 +112,9 @@ export default function AIChat({
                   msg.role === "user" ? "bg-blue-600 text-white rounded-br-none" : "bg-slate-800 text-slate-200 rounded-bl-none border border-slate-700"
                 }`}>
                   {msg.role === "assistant" ? (
-                    <div className="prose prose-invert prose-sm max-w-none">
-                      <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                    <div className="prose prose-invert prose-sm max-w-none overflow-x-auto">
+                      <ReactMarkdown 
+                      remarkPlugins={[remarkMath,remarkGfm]} rehypePlugins={[rehypeKatex]}>
                         {msg.content}
                       </ReactMarkdown>
                     </div>
