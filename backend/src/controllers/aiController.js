@@ -36,7 +36,7 @@ export const chatWithAI = async (req, res, next) => {
         model: "openai/gpt-oss-120b", // Modelo rápido y gratis
         messages: formattedMessages,
         temperature: 0.7, // Un poco de creatividad pero manteniendo la coherencia
-        max_tokens: 500,
+        max_tokens: 4000,
       },
       {
         headers: {

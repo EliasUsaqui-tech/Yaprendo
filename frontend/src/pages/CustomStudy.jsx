@@ -49,7 +49,7 @@ export default function CustomStudy() {
       }
 
       const response = await api.post("/auth/ai/custom-session", {
-        materialText: extractedText.slice(0, 8000), // Límite de caracteres para no saturar
+        materialText: extractedText.slice(0, 30000), // Límite de caracteres para no saturar
         technique: selectedTechnique,
         detailLevel: detailLevel
       });
