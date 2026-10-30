@@ -10,7 +10,16 @@ import { notFound, errorHandler } from "./middleware/errorHandler.js";
 
 const app = express();
 
-app.use(cors());
+// CONFIGURACIÓN DE CORS: Permitimos los dominios de producción
+app.use(cors({
+  origin: [
+    "http://localhost:5173", 
+    "https://utec-acompanamiento.vercel.app",
+    "https://yaprendo.vercel.app" // <-- CAMBIA ESTO POR EL DOMINIO QUE TE DIO VERCEL
+  ],
+  credentials: true
+}));
+
 app.use(express.json());
 
 app.get("/", (req, res) => {
