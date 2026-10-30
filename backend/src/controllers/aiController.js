@@ -86,13 +86,14 @@ export const generateCustomSession = async (req, res, next) => {
       
       REGLAS ESTRICTAS DE FORMATO (OBLIGATORIO):
       1. Devuelve la respuesta en formato Markdown puro.
-      2. TODA EXPRESIÓN MATEMÁTICA DEBE IR ENTRE SIGNOS DE DÓLAR. No hay excepciones.
+      2. PROHIBIDO usar etiquetas HTML (como <ul>, <li>, <b>, <br>). Usa Markdown en su lugar (ej. usa guiones "-" para listas y "**" para negritas).
+      3. TODA EXPRESIÓN MATEMÁTICA DEBE IR ENTRE SIGNOS DE DÓLAR. No hay excepciones.
          - Para variables o fórmulas cortas en medio de una oración, usa un solo dólar: $O(n^2)$ o $n=1024$.
          - Para fórmulas grandes o despejadas en su propio párrafo, usa doble dólar: $$\\Theta(n^2)$$
-      3. NUNCA escribas código LaTeX en texto plano (ej. NO escribas \\Theta o 3n^{2} sin los signos de dólar alrededor).
-      4. Si generas una tabla Markdown, evita usar fórmulas LaTeX complejas dentro de las celdas para no romper la tabla.
-      5. Sé claro, motivador y estructurado.
-      6. La guía debe estar basada ÚNICAMENTE en el texto proporcionado.
+      4. NUNCA escribas código LaTeX en texto plano (ej. NO escribas \\Theta o 3n^{2} sin los signos de dólar alrededor).
+      5. Si generas una tabla Markdown, evita usar fórmulas LaTeX complejas dentro de las celdas para no romper la tabla.
+      6. Sé claro, motivador y estructurado.
+      7. La guía debe estar basada ÚNICAMENTE en el texto proporcionado.
     `;
     const userPrompt = `
       Aquí está el material de clase:

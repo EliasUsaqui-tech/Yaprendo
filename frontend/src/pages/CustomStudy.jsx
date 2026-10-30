@@ -6,6 +6,8 @@ import rehypeKatex from "rehype-katex";
 import remarkGfm from "remark-gfm";
 import api from "../services/api";
 import pdfToText from "react-pdftotext";
+import rehypeRaw from "rehype-raw"; // <-- Nueva importación
+
 
 export default function CustomStudy() {
   const [file, setFile] = useState(null);
@@ -143,7 +145,7 @@ export default function CustomStudy() {
             <div className="prose prose-invert prose-sm max-w-none text-slate-300 overflow-x-auto">
               <ReactMarkdown 
                 remarkPlugins={[remarkMath, remarkGfm]} 
-                rehypePlugins={[rehypeKatex]}
+                rehypePlugins={[rehypeKatex, rehypeRaw]}
                 components={{
                   // Mejorar el espaciado de los párrafos
                   p: ({ node, ...props }) => <p className="mb-4 whitespace-pre-wrap leading-relaxed" {...props} />,
