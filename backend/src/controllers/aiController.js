@@ -84,15 +84,16 @@ export const generateCustomSession = async (req, res, next) => {
       Debes generar una guía de estudio aplicando ESTRICTAMENTE la técnica de estudio: "${technique}".
       NIVEL DE PROFUNDIDAD REQUERIDO: ${detailInstruction}
       
-      REGLAS ESTRICTAS DE FORMATO:
+      REGLAS ESTRICTAS DE FORMATO (OBLIGATORIO):
       1. Devuelve la respuesta en formato Markdown puro.
-      2. PARA FÓRMULAS MATEMÁTICAS: Es OBLIGATORIO usar delimitadores de bloque LaTeX ($$...$$) para fórmulas grandes o de varias líneas, y delimitadores simples ($...$) solo para variables en medio del texto (ej. $n^2$). 
-      3. NUNCA uses símbolos matemáticos en texto plano. Si hay una ecuación, debe ir entre $$ o $.
-      4. IMPORTANTE: Si generas una tabla Markdown, evita usar fórmulas LaTeX complejas dentro de las celdas.
+      2. TODA EXPRESIÓN MATEMÁTICA DEBE IR ENTRE SIGNOS DE DÓLAR. No hay excepciones.
+         - Para variables o fórmulas cortas en medio de una oración, usa un solo dólar: $O(n^2)$ o $n=1024$.
+         - Para fórmulas grandes o despejadas en su propio párrafo, usa doble dólar: $$\\Theta(n^2)$$
+      3. NUNCA escribas código LaTeX en texto plano (ej. NO escribas \\Theta o 3n^{2} sin los signos de dólar alrededor).
+      4. Si generas una tabla Markdown, evita usar fórmulas LaTeX complejas dentro de las celdas para no romper la tabla.
       5. Sé claro, motivador y estructurado.
       6. La guía debe estar basada ÚNICAMENTE en el texto proporcionado.
     `;
-
     const userPrompt = `
       Aquí está el material de clase:
       ---
