@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import logo from "../../assets/logo3.jpg";
+import logo from "../../assets/logo2.jpg";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -26,13 +26,16 @@ export default function Navbar() {
     <nav className="bg-slate-900 border-b border-slate-800 sticky top-0 z-10">
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         
-        {/* LOGO */}
+        {/* LOGO Y NOMBRE DE LA PÁGINA */}
         <Link to={homePath} className="flex items-center gap-2 hover:opacity-80 transition">
           <img 
             src={logo} 
-            alt="Yaprendo" 
+            alt="Yaprendo Logo" 
             className="h-16 md:h-20 w-auto object-contain scale-150 origin-left -ml-4" 
           />
+          <span className="text-2xl font-bold text-blue-400 tracking-wide ml-2 hidden md:block">
+            Yaprendo
+          </span>
         </Link>
         
         {user && (
@@ -47,6 +50,7 @@ export default function Navbar() {
             {user.role === "student" && (
               <>
                 <Link to="/courses" className={linkClass("/courses")}>Cursos</Link>
+                <Link to="/custom-study" className={linkClass("/custom-study")}>Sesión Dinámica</Link>
                 <Link to="/progress" className={linkClass("/progress")}>Progreso</Link>
               </>
             )}
@@ -60,7 +64,7 @@ export default function Navbar() {
             <Link to="/techniques" className={linkClass("/techniques")}>Técnicas</Link>
             <Link to="/mentors" className={linkClass("/mentors")}>Directorio</Link>
 
-            {/* BOTÓN EDITAR PERFIL (Reemplaza al avatar) */}
+            {/* BOTÓN EDITAR PERFIL */}
             <Link 
               to="/profile" 
               className="ml-3 bg-slate-800 hover:bg-slate-700 text-slate-200 px-3 py-1.5 rounded-lg text-sm font-medium transition border border-slate-700"
