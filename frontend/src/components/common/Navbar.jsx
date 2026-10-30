@@ -1,5 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import logo from "../../assets/logoYaprendo.png";
 
 export default function Navbar() {
   const { user, logout } = useAuth();
@@ -26,8 +27,12 @@ export default function Navbar() {
       <div className="max-w-6xl mx-auto px-4 py-3 flex items-center justify-between">
         
         {/* LOGO */}
-        <Link to={homePath} className="font-bold text-lg text-blue-400 hover:text-blue-300 transition">
-          Yaprendo
+        <Link to={homePath} className="flex items-center gap-2 hover:opacity-80 transition">
+          <img 
+            src={logo} 
+            alt="Yaprendo" 
+            className="h-10 md:h-12 w-auto object-contain" // Ajusta la altura según tu logo
+          />
         </Link>
         
         {user && (
