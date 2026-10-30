@@ -12,13 +12,13 @@ export default function CourseSelection() {
     courseService
       .getAll()
       .then((data) => {
-        // ORDENAMIENTO: Ponemos Fundamentos del Cálculo primero
-        const sortedCourses = data.sort((a, b) => {
-          if (a.code === "FUNCAL") return -1; // FUNCAL va primero
+        // Forzamos el orden aquí también por si acaso
+        const sorted = [...data].sort((a, b) => {
+          if (a.code === "FUNCAL") return -1;
           if (b.code === "FUNCAL") return 1;
-          return 0; // El resto se queda igual
+          return 0;
         });
-        setCourses(sortedCourses);
+        setCourses(sorted);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -26,7 +26,7 @@ export default function CourseSelection() {
 
   if (loading) return <Loader />;
 
-  // Lista de códigos de cursos que estarán bloqueados (Próximamente)
+  // Cursos bloqueados
   const lockedCourses = ["CAL1", "FIS1"];
 
   return (
@@ -38,7 +38,8 @@ export default function CourseSelection() {
         Elige el curso filtro que estás llevando este ciclo.
       </p>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {/* Usamos un flex en lugar de grid para controlar el orden mejor */}
+      <div className="flex flex-wrap gap-4">
         {courses.map((course) => {
           const isLocked = lockedCourses.includes(course.code);
 
@@ -46,9 +47,9 @@ export default function CourseSelection() {
             <div
               key={course._id}
               onClick={() => !isLocked && navigate(`/courses/${course._id}`)}
-              className={`card text-left relative overflow-hidden transition ${
+              className={`card text-left relative overflow-hidden transition w-full md:w-[calc(50%-0.5rem)] lg:w-[calc(33.333%-0.75rem)] ${
                 isLocked 
-                  ? "opacity-60 cursor-not-allowed grayscale" 
+                  ? "opacity-50 cursor-not-allowed grayscale" 
                   : "hover:shadow-md hover:bg-slate-800/80 cursor-pointer"
               }`}
               style={{ borderTop: `4px solid ${course.color || "#1e40af"}` }}
@@ -66,8 +67,10 @@ export default function CourseSelection() {
 
               {/* ETIQUETA DE PRÓXIMAMENTE */}
               {isLocked && (
-                <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-slate-950/90 border border-slate-600 text-slate-300 font-bold text-xs px-3 py-1.5 rounded-full shadow-lg backdrop-blur-sm z-10">
-                  🔒 Próximamente
+                <div className="absolute inset-0 bg-slate-950/40 flex items-center justify-center z-10">
+                  <span className="bg-slate-900 border border-slate-500 text-slate-200 font-bold text-sm px-4 py-2 rounded-full shadow-xl">
+                    🔒 Próximamente
+                  </span>
                 </div>
               )}
             </div>

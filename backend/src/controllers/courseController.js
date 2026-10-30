@@ -4,8 +4,18 @@ import Topic from "../models/Topic.js";
 // GET /api/courses
 export const getCourses = async (req, res, next) => {
   try {
-    const courses = await Course.find().populate("topics", "name order");
-    res.json(courses);
+    // Buscamos los cursos y los ordenamos por su 'order' o 'code'
+    const courses = await Course.find().populate("topics", "name order").sort({ code: -1 });
+    // El sort({ code: -1 }) hará que FUNCAL (F) salga antes que CAL1 (C) y FIS1 (F)
+    
+    // Una forma más exacta:
+    const sortedCourses = courses.sort((a, b) => {
+      if (a.code === "FUNCAL") return -1;
+      if (b.code === "FUNCAL") return 1;
+      return 0;
+    });
+
+    res.json(sortedCourses);
   } catch (error) {
     next(error);
   }
