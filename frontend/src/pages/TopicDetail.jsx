@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import ReactMarkdown from "react-markdown";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 import api from "../services/api";
 import Loader from "../components/common/Loader";
 
@@ -12,14 +15,12 @@ export default function TopicDetail() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Hacemos las peticiones para traer el tema, su técnica recomendada y su quiz
     Promise.all([
       api.get(`/courses/topics/${id}`).then(r => r.data).catch(() => null),
       api.get(`/techniques?topic=${id}`).then(r => r.data),
       api.get(`/quizzes?topic=${id}`).then(r => r.data)
     ])
       .then(([topicData, techData, quizData]) => {
-        // Si el backend no tiene la ruta, usamos un fallback
         setTopic(topicData || { name: "Detalle del tema", description: "Estudiando...", content: "", course: "" }); 
         setTechnique(techData && techData.length > 0 ? techData[0] : null);
         setQuiz(quizData && quizData.length > 0 ? quizData[0] : null);
@@ -68,7 +69,6 @@ export default function TopicDetail() {
             )}
           </div>
 
-          {/* Pasos de la técnica (si existe) */}
           {technique?.steps && technique.steps.length > 0 && (
             <div className="mt-4 bg-slate-900/50 p-4 rounded-lg border border-purple-900/50">
               <p className="text-xs font-semibold text-purple-300 mb-2">¿Cómo aplicarla?</p>
@@ -83,14 +83,23 @@ export default function TopicDetail() {
           )}
         </div>
 
-        {/* ====== RESUMEN TEÓRICO DEL TEMA ====== */}
+        {/* ====== RESUMEN TEÓRICO CON MARKDOWN ====== */}
         <div className="card bg-slate-900 border-slate-700">
           <h2 className="text-xl font-bold text-slate-100 mb-4 flex items-center gap-2 border-b border-slate-700 pb-3">
             📖 Resumen del Tema
           </h2>
           {topic?.content ? (
-            <div className="text-slate-300 text-sm leading-relaxed whitespace-pre-wrap">
-              {topic.content}
+            <div className="text-slate-300 text-sm leading-relaxed">
+              <ReactMarkdown
+                remarkPlugins={[remarkMath]}
+                rehypePlugins={[rehypeKatex]}
+                components={{
+                  p: ({ node, ...props }) => <p className="mb-4 whitespace-pre-wrap" {...props} />,
+                  strong: ({ node, ...props }) => <strong className="text-slate-100 font-bold" {...props} />
+                }}
+              >
+                {topic.content}
+              </ReactMarkdown>
             </div>
           ) : (
             <div className="text-center py-8">

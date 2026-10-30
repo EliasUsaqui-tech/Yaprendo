@@ -49,76 +49,75 @@ const run = async () => {
   calc1.topics = topicsCalc.map(t => t._id);
   await calc1.save();
 
-  // Fundamentos del Cálculo (11 Semanas)
+  // Fundamentos del Cálculo (11 Semanas con formato Markdown/LaTeX)
   console.log("📖 Creando semanas de Fundamentos del Cálculo...");
-  // En tu seed.js, busca el bucle de topicsFund y reemplázalo por este:
   
   const semanasFundConTeoria = [
     { 
       s: 1, 
       name: "Semana 1: Funciones y Dominio", 
       desc: "Dominio, rango, composición y modelos.",
-      content: "Una función es una regla que asigna a cada valor de x (dominio) un único valor de y (rango).\n\n**Conceptos clave:**\n1. **Dominio:** Valores de x permitidos. Si hay raíz cuadrada, lo de adentro debe ser ≥ 0. Si hay logaritmo, debe ser > 0.\n2. **Composición (f∘g):** Significa evaluar g(x) y meter ese resultado en f(x). El dominio de la composición son los x que están en el dominio de g, y cuyo resultado g(x) está en el dominio de f.\n\n**Ejemplo de examen:** Para f(x) = ln(4-x) y g(x) = √(3x+6), el dominio de f es x < 4 y el de g es x ≥ -2."
+      content: "Una función es una regla que asigna a cada valor de x (dominio) un único valor de y (rango).\n\n**Conceptos clave:**\n1. **Dominio:** Valores de x permitidos. Si hay raíz cuadrada, lo de adentro debe ser mayor o igual a 0 ($\\ge 0$). Si hay logaritmo, debe ser mayor que 0 ($> 0$).\n2. **Composición ($f \\circ g$):** Significa evaluar $g(x)$ y meter ese resultado en $f(x)$.\n\n**Ejemplo de examen:** Para $f(x) = \\ln(4-x)$ y $g(x) = \\sqrt{3x+6}$, el dominio de $f$ es $x < 4$ y el de $g$ es $x \\ge -2$."
     },
     { 
       s: 2, 
       name: "Semana 2: Función Lineal y Cuadrática", 
       desc: "Pendiente, vértice, máximos y mínimos.",
-      content: "**Función Lineal (y = mx + b):** La pendiente 'm' indica la tasa de cambio constante. Si m > 0 es creciente.\n\n**Función Cuadrática (y = ax² + bx + c):** Su gráfica es una parábola.\n- Si a > 0, abre hacia arriba (tiene un mínimo).\n- Si a < 0, abre hacia abajo (tiene un máximo).\n\n**El Vértice:** Es el punto máximo o mínimo. Se calcula con la fórmula: **t = -b / (2a)**.\n\n**Ejemplo de examen:** En E(t) = 0.8t² - 6t + 25, el vértice está en t = -(-6) / (2*0.8) = 3.75."
+      content: "**Función Lineal ($y = mx + b$):** La pendiente $m$ indica la tasa de cambio constante.\n\n**Función Cuadrática ($y = ax^2 + bx + c$):** Su gráfica es una parábola.\n- Si $a > 0$, abre hacia arriba.\n- Si $a < 0$, abre hacia abajo.\n\n**El Vértice:** Se calcula con la fórmula: \n$$t = -\\frac{b}{2a}$$\n\n**Ejemplo:** En $E(t) = 0.8t^2 - 6t + 25$, el vértice está en $t = 3.75$."
     },
     { 
       s: 3, 
       name: "Semana 3: Trigonometría Básica", 
       desc: "Círculo unitario, identidades y ángulos de elevación.",
-      content: "**Identidad Pitagórica:** sen²(θ) + cos²(θ) = 1. Es la base para resolver muchas ecuaciones.\n\n**Ángulos de Elevación:** Son los problemas de 'una torre y su sombra'.\n- Si tienes el cateto opuesto (altura) y el adyacente (distancia), usas **Tangente** (tan θ = Opuesto/Adyacente).\n- Si tienes la hipotenusa, usas Seno o Coseno.\n\n**Ejemplo de examen:** Si el ángulo es 50° y la distancia es 100m, la altura es 100 * tan(50°) = 160m."
+      content: "**Identidad Pitagórica:** Es la base para resolver muchas ecuaciones:\n$$\\sin^2(\\theta) + \\cos^2(\\theta) = 1$$\n\n**Ángulos de Elevación:** Si tienes el cateto opuesto (altura) y el adyacente (distancia), usas la **Tangente**:\n$$\\tan(\\theta) = \\frac{\\text{Opuesto}}{\\text{Adyacente}}$$\n\n**Ejemplo de examen:** Si el ángulo es $50^\\circ$ y la distancia es $100m$, la altura es $h = 100 \\cdot \\tan(50^\\circ) \\approx 160m$."
     },
     { 
       s: 4, 
       name: "Semana 4: Funciones Trigonométricas", 
       desc: "Amplitud, periodo, desfase y gráficas.",
-      content: "Para la función general G(x) = A * cos(B(x - C)) + D:\n- **Amplitud (A):** Qué tanto sube y baja desde el centro. (Siempre es positiva, |A|).\n- **Periodo:** Cuánto tarda en repetirse un ciclo. Fórmula: **2π / |B|**.\n- **Desfase (C):** Desplazamiento horizontal.\n- **Desplazamiento vertical (D):** Hacia arriba o abajo del eje X."
+      content: "Para la función general $G(x) = A \\cos(B(x - C)) + D$:\n- **Amplitud ($A$):** $|A|$.\n- **Periodo:** $\\frac{2\\pi}{|B|}$.\n- **Desfase ($C$):** Desplazamiento horizontal.\n- **Desplazamiento vertical ($D$):** Hacia arriba o abajo."
     },
     { 
       s: 5, 
       name: "Semana 5: Función Exponencial", 
       desc: "Crecimiento, decaimiento y vida media.",
-      content: "Una función exponencial tiene la forma **f(t) = A * e^(kt)**.\n- Si k > 0, hay **crecimiento** (ej. interés compuesto, poblaciones).\n- Si k < 0, hay **decaimiento** (ej. radiactividad, enfriamiento).\n\n**Vida Media:** Es el tiempo que tarda una cantidad en reducirse a la mitad. La constante k se calcula como **k = ln(2) / vida_media**.\n\n**Ejemplo de examen:** Si un medicamento sigue C(t) = 40e^(-0.18t) + 5, su concentración inicial (t=0) es 40 + 5 = 45 mg/L."
+      content: "Una función exponencial tiene la forma $f(t) = A e^{kt}$.\n- Si $k > 0$, hay **crecimiento**.\n- Si $k < 0$, hay **decaimiento**.\n\n**Vida Media:** La constante $k$ se calcula como $k = \\frac{\\ln(2)}{\\text{vida media}}$.\n\n**Ejemplo:** $C(t) = 40e^{-0.18t} + 5$, su concentración inicial ($t=0$) es $45$ mg/L."
     },
     { 
       s: 6, 
       name: "Semana 6: Función Logarítmica", 
       desc: "Propiedades de logaritmos y ecuaciones.",
-      content: "El logaritmo es la inversa de la exponencial. log_b(x) = y significa que b^y = x.\n\n**Propiedades clave:**\n- log(a * b) = log(a) + log(b)\n- log(a / b) = log(a) - log(b)\n- log(a^n) = n * log(a)\n\n**Dominio:** Solo existe el logaritmo de números positivos (x > 0).\n\n**Ejemplo de examen:** log₃(x+1) + log₃(x-5) = 2 se convierte en log₃((x+1)(x-5)) = 2, que equivale a (x+1)(x-5) = 3²."
+      content: "El logaritmo es la inversa de la exponencial: $\\log_b(x) = y \\iff b^y = x$.\n\n**Propiedades clave:**\n- $\\log(a \\cdot b) = \\log(a) + \\log(b)$\n- $\\log\\left(\\frac{a}{b}\\right) = \\log(a) - \\log(b)$\n- $\\log(a^n) = n \\log(a)$\n\n**Ejemplo de examen:** $\\log_3(x+1) + \\log_3(x-5) = 2$ se convierte en $(x+1)(x-5) = 3^2$."
     },
     { 
       s: 7, 
       name: "Semana 7: Ecuaciones Exponenciales", 
       desc: "Resolución y aplicaciones.",
-      content: "Para resolver ecuaciones con exponenciales, busca igualar las bases o usar **cambio de variable**.\n\n**Ejemplo de examen:** 9^x - 10(3^x) + 9 = 0.\nComo 9^x = (3^x)², hacemos u = 3^x. La ecuación se vuelve u² - 10u + 9 = 0.\nSe resuelve la cuadrática y luego se despeja x con logaritmos."
+      content: "Para resolver ecuaciones con exponenciales, busca igualar las bases o usar **cambio de variable**.\n\n**Ejemplo de examen:** $9^x - 10(3^x) + 9 = 0$.\nComo $9^x = (3^x)^2$, hacemos $u = 3^x$. La ecuación se vuelve $u^2 - 10u + 9 = 0$."
     },
     { 
       s: 8, 
       name: "Semana 8: Geometría Analítica", 
       desc: "Cónicas: circunferencia, parábola, elipse.",
-      content: "**Identificar cónicas:** Mira los coeficientes de x² e y².\n- **Circunferencia:** Coeficientes iguales y del mismo signo (ej. x² + y² - 6x...).\n- **Parábola:** Solo una variable está al cuadrado (ej. y² - 8x...).\n- **Elipse:** Coeficientes distintos pero positivos (ej. 4x² + 9y²...).\n\n**Completar cuadrados:** Es la técnica para hallar el centro y radio de una circunferencia. Se agrupan las x y las y, y se suma el cuadrado de la mitad del término lineal."
+      content: "**Identificar cónicas:** Mira los coeficientes de $x^2$ e $y^2$.\n- **Circunferencia:** Coeficientes iguales y del mismo signo.\n- **Parábola:** Solo una variable está al cuadrado.\n- **Elipse:** Coeficientes distintos pero positivos.\n\n**Completar cuadrados:** Técnica para hallar el centro y radio."
     },
     { 
       s: 9, 
       name: "Semana 9: Vectores en 2D", 
       desc: "Componentes, magnitud y dirección.",
-      content: "Un vector tiene **magnitud** (longitud) y **dirección** (ángulo).\n\n**Magnitud de un vector v = <x, y>:** Se calcula con el teorema de Pitágoras: **|v| = √(x² + y²)**.\n\n**Vector unitario:** Es un vector de longitud 1 que apunta en la misma dirección. Se calcula dividiendo el vector entre su magnitud: **û = v / |v|**.\n\n**Ejemplo de examen:** Si v = <3, 4>, su magnitud es √(3² + 4²) = 5. Su vector unitario es <3/5, 4/5> = <0.6, 0.8>."
+      content: "Un vector tiene **magnitud** (longitud) y **dirección** (ángulo).\n\n**Magnitud de $v = \\langle x, y \\rangle$:** Se calcula con el teorema de Pitágoras:\n$$|v| = \\sqrt{x^2 + y^2}$$\n\n**Vector unitario:** $\\hat{u} = \\frac{v}{|v|}$.\n\n**Ejemplo:** Si $v = \\langle 3, 4 \\rangle$, su magnitud es $5$ y su vector unitario es $\\langle 0.6, 0.8 \\rangle$."
     },
     { 
       s: 10, 
       name: "Semana 10: Operaciones con Vectores", 
       desc: "Producto punto, producto cruz y ángulos.",
-      content: "**Producto Punto (A · B):** Multiplicas componentes iguales y sumas. Si A = <2, 3> y B = <4, -1>, entonces A · B = (2*4) + (3*-1) = 8 - 3 = 5.\n\n**Ángulo entre vectores:** Si el producto punto es 0, significa que los vectores son **perpendiculares** (ángulo de 90°).\nLa fórmula general es: A · B = |A| * |B| * cos(θ)."
+      content: "**Producto Punto ($A \\cdot B$):** Multiplicas componentes iguales y sumas. Si $A = \\langle 2, 3 \\rangle$ y $B = \\langle 4, -1 \\rangle$, entonces $A \\cdot B = (2)(4) + (3)(-1) = 5$.\n\n**Ángulo entre vectores:** Si el producto punto es 0, son **perpendiculares**.\n$$A \\cdot B = |A| |B| \\cos(\\theta)$$"
     },
     { 
       s: 11, 
       name: "Semana 11: Aplicaciones de Vectores", 
       desc: "Equilibrio de fuerzas y trayectorias.",
-      content: "En física, si un objeto está en **equilibrio**, la suma de todas las fuerzas (vectores) que actúan sobre él es igual a cero: **ΣF = 0**.\n\nPara resolver problemas de fuerzas (como un dron o un puente):\n1. Descompones cada fuerza en sus componentes X e Y.\n2. Sumas todas las X y las igualas a 0.\n3. Sumas todas las Y y las igualas a 0.\n4. Resuelves el sistema de ecuaciones."
+      content: "En física, si un objeto está en **equilibrio**, la suma de todas las fuerzas es cero: **$\\Sigma F = 0$**.\n\nPara resolver problemas de fuerzas:\n1. Descompones cada fuerza en sus componentes X e Y.\n2. Sumas todas las X y las igualas a 0.\n3. Sumas todas las Y y las igualas a 0.\n4. Resuelves el sistema."
     },
   ];
 
@@ -128,7 +127,7 @@ const run = async () => {
     const topic = await Topic.create({ 
       name: sem.name, 
       description: sem.desc, 
-      content: sem.content, // <-- Guardamos la teoría
+      content: sem.content, 
       course: fundCalc._id, 
       order: sem.s 
     });
