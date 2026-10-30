@@ -15,6 +15,18 @@ export default function TopicDetail() {
   const [allTechniques, setAllTechniques] = useState([]); // <-- Nuevo estado
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
+    // Función para obtener el color según el tipo de técnica
+  const getTechColor = (type) => {
+    switch (type) {
+      case "feynman": return { border: "border-blue-500", bg: "bg-blue-950", text: "text-blue-300", gradient: "from-blue-950 to-slate-900" };
+      case "active-recall": return { border: "border-emerald-500", bg: "bg-emerald-950", text: "text-emerald-300", gradient: "from-emerald-950 to-slate-900" };
+      case "problem-solving": return { border: "border-orange-500", bg: "bg-orange-950", text: "text-orange-300", gradient: "from-orange-950 to-slate-900" };
+      case "pomodoro": return { border: "border-red-500", bg: "bg-red-950", text: "text-red-300", gradient: "from-red-950 to-slate-900" };
+      default: return { border: "border-purple-500", bg: "bg-purple-950", text: "text-purple-300", gradient: "from-purple-950 to-slate-900" };
+    }
+  };
+
+  const techColor = getTechColor(technique?.type);
 
   useEffect(() => {
     Promise.all([
