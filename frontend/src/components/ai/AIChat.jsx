@@ -2,7 +2,7 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
-import remarkGfm from "remark-gfm"; // <-- NUEVA IMPORTACIÓN
+import remarkGfm from "remark-gfm";
 import api from "../../services/api";
 
 export default function AIChat({ 
@@ -116,14 +116,16 @@ export default function AIChat({
                         remarkPlugins={[remarkMath, remarkGfm]} 
                         rehypePlugins={[rehypeKatex]}
                         components={{
-                          // Envolver la tabla en un div con scroll horizontal
+                          // Envolver la tabla en un div con scroll horizontal si es muy ancha
                           table: ({ node, ...props }) => (
-                            <div className="overflow-x-auto max-w-full my-4 rounded-lg border border-slate-700">
-                              <table className="w-full text-left border-collapse text-xs" {...props} />
+                            <div className="overflow-x-auto w-full my-4 rounded-lg border border-slate-700">
+                              {/* w-full para que se adapte, min-w-[400px] para que no se aplaste en móviles */}
+                              <table className="w-full min-w-[400px] text-left border-collapse text-xs" {...props} />
                             </div>
                           ),
-                          th: ({ node, ...props }) => <th className="bg-slate-800 p-2 border-b border-slate-600 font-bold" {...props} />,
-                          td: ({ node, ...props }) => <td className="p-2 border-b border-slate-700/50" {...props} />
+                          // El texto baja de línea (break-words) en lugar de cortarse o estirar la tabla
+                          th: ({ node, ...props }) => <th className="bg-slate-800 p-2 border-b border-slate-600 font-bold align-top break-words" {...props} />,
+                          td: ({ node, ...props }) => <td className="p-2 border-b border-slate-700/50 align-top break-words" {...props} />
                         }}
                       >
                         {msg.content}
