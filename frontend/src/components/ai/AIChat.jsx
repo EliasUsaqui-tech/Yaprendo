@@ -2,9 +2,8 @@ import { useState } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
-import api from "../../services/api";
 import remarkGfm from "remark-gfm"; // <-- NUEVA IMPORTACIÓN
-
+import api from "../../services/api";
 
 export default function AIChat({ 
   topicName, 
@@ -112,9 +111,21 @@ export default function AIChat({
                   msg.role === "user" ? "bg-blue-600 text-white rounded-br-none" : "bg-slate-800 text-slate-200 rounded-bl-none border border-slate-700"
                 }`}>
                   {msg.role === "assistant" ? (
-                    <div className="prose prose-invert prose-sm max-w-none overflow-x-auto">
+                    <div className="prose prose-invert prose-sm max-w-none">
                       <ReactMarkdown 
-                      remarkPlugins={[remarkMath,remarkGfm]} rehypePlugins={[rehypeKatex]}>
+                        remarkPlugins={[remarkMath, remarkGfm]} 
+                        rehypePlugins={[rehypeKatex]}
+                        components={{
+                          // Envolver la tabla en un div con scroll horizontal
+                          table: ({ node, ...props }) => (
+                            <div className="overflow-x-auto max-w-full my-4 rounded-lg border border-slate-700">
+                              <table className="w-full text-left border-collapse text-xs" {...props} />
+                            </div>
+                          ),
+                          th: ({ node, ...props }) => <th className="bg-slate-800 p-2 border-b border-slate-600 font-bold" {...props} />,
+                          td: ({ node, ...props }) => <td className="p-2 border-b border-slate-700/50" {...props} />
+                        }}
+                      >
                         {msg.content}
                       </ReactMarkdown>
                     </div>
