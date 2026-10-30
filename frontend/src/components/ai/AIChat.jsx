@@ -4,15 +4,16 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import api from "../../services/api";
 
-// Le damos un valor por defecto a techColor para que nunca falle
 export default function AIChat({ 
   topicName, 
   techniqueName, 
   allTechniques, 
   onTechniqueChange, 
-  techColor = { border: "border-purple-500", bg: "bg-purple-900", text: "text-purple-300", gradient: "from-purple-600 to-blue-600" } 
+  techColor = { border: "border-purple-500", bg: "bg-purple-900", text: "text-purple-300", gradient: "from-purple-600 to-blue-600" },
+  onExpandChange 
 }) {
   const [isOpen, setIsOpen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false); 
   const [messages, setMessages] = useState([
     {
       role: "assistant",
@@ -38,32 +39,50 @@ export default function AIChat({
         history: messages,
         userMessage: input
       });
-      
       setMessages((prev) => [...prev, { role: "assistant", content: response.data.reply }]);
     } catch (error) {
-      setMessages((prev) => [...prev, { role: "assistant", content: "Lo siento, tuve un problema de conexión. ¿Podemos intentarlo de nuevo?" }]);
+      setMessages((prev) => [...prev, { role: "assistant", content: "Lo siento, tuve un problema de conexión." }]);
     } finally {
       setLoading(false);
     }
   };
 
+  const toggleExpand = () => {
+    const newState = !isExpanded;
+    setIsExpanded(newState);
+    if (onExpandChange) onExpandChange(newState); 
+  };
+
   return (
-    <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end">
+    <div className={`fixed bottom-6 right-6 z-50 flex flex-col items-end transition-all duration-500 ease-in-out ${
+      isExpanded ? 'w-full md:w-1/2 h-[calc(100vh-100px)]' : '' 
+    }`}>
       {/* Ventana del Chat */}
       {isOpen && (
-        <div className={`bg-slate-900 border ${techColor.border} rounded-2xl shadow-2xl w-80 md:w-96 mb-4 overflow-hidden flex flex-col h-[500px] transition-colors duration-500`}>
+        <div className={`bg-slate-900 border ${techColor.border} rounded-2xl shadow-2xl overflow-hidden flex flex-col transition-all duration-500 ${
+          isExpanded ? 'w-full h-full mb-0' : 'w-80 md:w-96 mb-4 h-[500px]'
+        }`}>
           
-          {/* Header del Chat con Selector de Técnica */}
+          {/* Header del Chat */}
           <div className={`p-4 flex flex-col gap-2 text-white transition-colors duration-500 ${techColor.bg} border-b ${techColor.border}`}>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <span className="text-2xl">🤖</span>
                 <h3 className="font-bold text-sm">Cachimbo Bot</h3>
               </div>
-              <button onClick={() => setIsOpen(false)} className="text-white/70 hover:text-white">✕</button>
+              
+              <div className="flex items-center gap-2">
+                <button 
+                  onClick={toggleExpand} 
+                  className="text-white/70 hover:text-white px-2 py-1 bg-white/10 rounded transition"
+                  title={isExpanded ? "Minimizar" : "Expandir a pantalla dividida"}
+                >
+                  {isExpanded ? "🗗" : "🗖"}
+                </button>
+                <button onClick={() => { setIsOpen(false); if (isExpanded) toggleExpand(); }} className="text-white/70 hover:text-white">✕</button>
+              </div>
             </div>
             
-            {/* Selector dentro del chat */}
             <div className="bg-black/20 p-2 rounded-lg border border-white/10">
               <label className="text-[10px] text-white/80 uppercase font-bold mb-1 block">
                 Cambiar técnica:
@@ -88,9 +107,7 @@ export default function AIChat({
             {messages.map((msg, idx) => (
               <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
                 <div className={`max-w-[85%] p-3 rounded-xl text-sm ${
-                  msg.role === "user" 
-                    ? "bg-blue-600 text-white rounded-br-none" 
-                    : "bg-slate-800 text-slate-200 rounded-bl-none border border-slate-700"
+                  msg.role === "user" ? "bg-blue-600 text-white rounded-br-none" : "bg-slate-800 text-slate-200 rounded-bl-none border border-slate-700"
                 }`}>
                   {msg.role === "assistant" ? (
                     <div className="prose prose-invert prose-sm max-w-none">
@@ -98,9 +115,7 @@ export default function AIChat({
                         {msg.content}
                       </ReactMarkdown>
                     </div>
-                  ) : (
-                    msg.content
-                  )}
+                  ) : (msg.content)}
                 </div>
               </div>
             ))}

@@ -15,8 +15,10 @@ export default function TopicDetail() {
   const [allTechniques, setAllTechniques] = useState([]); 
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
+  
+  // ESTADO NUEVO PARA CONTROLAR LA PANTALLA DIVIDIDA
+  const [isChatExpanded, setIsChatExpanded] = useState(false);
 
-  // Función para obtener el color según el tipo de técnica
   const getTechColor = (type) => {
     switch (type) {
       case "feynman": return { border: "border-blue-500", bg: "bg-blue-950", text: "text-blue-300", gradient: "from-blue-950 to-slate-900" };
@@ -27,7 +29,7 @@ export default function TopicDetail() {
     }
   };
 
-  const techColor = getTechColor(technique?.type);
+  const techColor = technique ? getTechColor(technique.type) : getTechColor("default");
 
   useEffect(() => {
     Promise.all([
@@ -37,12 +39,8 @@ export default function TopicDetail() {
     ])
       .then(([topicData, techData, quizData]) => {
         setTopic(topicData || { name: "Detalle del tema", description: "Estudiando...", content: "", course: "" }); 
-        
-        if (techData && techData.length > 0) {
-          setTechnique(techData[0]);
-        }
+        if (techData && techData.length > 0) setTechnique(techData[0]);
         setAllTechniques(techData || []); 
-        
         setQuiz(quizData && quizData.length > 0 ? quizData[0] : null);
       })
       .catch(console.error)
@@ -52,7 +50,8 @@ export default function TopicDetail() {
   if (loading) return <Loader />;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
+    // TRANSICIÓN SUAVE PARA EL ANCHO
+    <div className={`transition-all duration-500 ease-in-out px-4 py-8 ${isChatExpanded ? 'w-full md:w-1/2' : 'max-w-4xl mx-auto'}`}>
       <button onClick={() => navigate(-1)} className="text-sm text-blue-400 hover:underline mb-6 block">
         ← Volver al curso
       </button>
@@ -73,7 +72,6 @@ export default function TopicDetail() {
                 </h2>
               </div>
               
-              {/* SELECTOR DE TÉCNICA */}
               <select 
                 value={technique?._id || ""}
                 onChange={(e) => {
@@ -115,64 +113,46 @@ export default function TopicDetail() {
           )}
         </div>
 
-        {/* ====== RESUMEN TEÓRICO CON MARKDOWN ====== */}
+        {/* ====== RESUMEN TEÓRICO ====== */}
         <div className="card bg-slate-900 border-slate-700">
           <h2 className="text-xl font-bold text-slate-100 mb-4 flex items-center gap-2 border-b border-slate-700 pb-3">
             📖 Resumen del Tema
           </h2>
           {topic?.content ? (
             <div className="text-slate-300 text-sm leading-relaxed">
-              <ReactMarkdown
-                remarkPlugins={[remarkMath]}
-                rehypePlugins={[rehypeKatex]}
-                components={{
-                  p: ({ node, ...props }) => <p className="mb-4 whitespace-pre-wrap" {...props} />,
-                  strong: ({ node, ...props }) => <strong className="text-slate-100 font-bold" {...props} />
-                }}
-              >
+              <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
                 {topic.content}
               </ReactMarkdown>
             </div>
           ) : (
-            <div className="text-center py-8">
-              <p className="text-slate-500 italic">Aún no hay un resumen teórico subido para este tema.</p>
-            </div>
+            <div className="text-center py-8"><p className="text-slate-500 italic">Aún no hay un resumen teórico.</p></div>
           )}
         </div>
 
-        {/* ====== TARJETA DE LA AUTOEVALUACIÓN ====== */}
+        {/* ====== AUTOEVALUACIÓN ====== */}
         <div className="card bg-gradient-to-r from-blue-950 to-slate-900 border-blue-800 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="text-center md:text-left">
             <h2 className="text-xl font-bold text-blue-200 mb-2 flex items-center justify-center md:justify-start gap-2">
               <span className="text-2xl">📝</span> Autoevaluación
             </h2>
-            <p className="text-sm text-slate-300">
-              Cuando termines de leer el resumen, pon a prueba tu comprensión real con este quiz corto.
-            </p>
+            <p className="text-sm text-slate-300">Pon a prueba tu comprensión real.</p>
           </div>
-          
           {quiz ? (
-            <Link to={`/quiz/${quiz._id}`} className="btn-primary whitespace-nowrap px-8 py-3 w-full md:w-auto">
-              Empezar Quiz
-            </Link>
+            <Link to={`/quiz/${quiz._id}`} className="btn-primary whitespace-nowrap px-8 py-3 w-full md:w-auto">Empezar Quiz</Link>
           ) : (
-            <div className="bg-slate-800 p-3 rounded-lg text-center w-full md:w-auto">
-              <p className="text-sm text-slate-500">No hay quiz disponible aún.</p>
-            </div>
+            <p className="text-sm text-slate-500">No hay quiz disponible.</p>
           )}
         </div>
-
       </div>
 
-      {/* CHAT DE IA FLOTANTE (Sin la key para que no se cierre) */}
       <AIChat 
         topicName={topic?.name} 
         techniqueName={technique?.title || "General"} 
         allTechniques={allTechniques} 
         onTechniqueChange={setTechnique}
         techColor={techColor}
+        onExpandChange={setIsChatExpanded} // <-- Pasamos la función
       />
-
     </div>
   );
 }
