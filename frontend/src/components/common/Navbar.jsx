@@ -31,7 +31,7 @@ export default function Navbar() {
           <img 
             src={logo} 
             alt="Yaprendo" 
-            className="h-21 w-auto object-contain" // Ajusta la altura según tu logo
+            className="h-10 max-h-full w-auto object-contain" // Ajusta la altura según tu logo
           />
         </Link>
         
