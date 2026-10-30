@@ -4,6 +4,7 @@ const topicSchema = new mongoose.Schema(
   {
     name: { type: String, required: true, trim: true },
     description: { type: String, default: "" },
+    content: { type: String, default: "" },
     course: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Course",

@@ -11,12 +11,24 @@ export const getCourses = async (req, res, next) => {
   }
 };
 
+// GET /api/courses/topics/:id
+export const getTopicById = async (req, res, next) => {
+  try {
+    const topic = await Topic.findById(req.params.id);
+    if (!topic) return res.status(404).json({ message: "Tema no encontrado" });
+    res.json(topic);
+  } catch (error) {
+    next(error);
+  }
+};
+
 // GET /api/courses/:id
 export const getCourseById = async (req, res, next) => {
   try {
+    // Agregamos "content" para que la vista del curso pueda mostrar la teoría si la necesita
     const course = await Course.findById(req.params.id).populate(
       "topics",
-      "name description order"
+      "name description content order" 
     );
     if (!course) return res.status(404).json({ message: "Curso no encontrado" });
     res.json(course);
@@ -28,6 +40,7 @@ export const getCourseById = async (req, res, next) => {
 // GET /api/courses/:id/topics
 export const getCourseTopics = async (req, res, next) => {
   try {
+    // Traemos todos los campos, incluido content, para la lista
     const topics = await Topic.find({ course: req.params.id }).sort("order");
     res.json(topics);
   } catch (error) {
