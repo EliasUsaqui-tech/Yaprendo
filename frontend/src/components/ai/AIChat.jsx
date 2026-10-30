@@ -25,7 +25,7 @@ export default function AIChat({ topicName, techniqueName, allTechniques, onTech
     setLoading(true);
 
     try {
-      const response = await api.post("/ai/chat", {
+      const response = await api.post("/auth/ai/chat", {
         topicName,
         techniqueName,
         history: messages,
