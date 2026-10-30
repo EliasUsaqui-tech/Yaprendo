@@ -123,6 +123,15 @@ export default function Quiz() {
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8">
+
+            {/* BOTÓN PARA SALIR DEL QUIZ */}
+      <button 
+        onClick={() => navigate("/courses")} 
+        className="text-sm text-slate-400 hover:text-white mb-4 flex items-center gap-2 transition"
+      >
+        ← Salir del Quiz y volver a cursos
+      </button>
+      
       <h1 className="text-2xl font-bold text-slate-100 mb-1">{quiz.title}</h1>
       <p className="text-slate-400 mb-6">{quiz.description}</p>
 

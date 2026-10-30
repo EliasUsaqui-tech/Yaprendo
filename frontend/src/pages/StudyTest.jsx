@@ -12,7 +12,7 @@ export default function StudyTest() {
     {
       q: "Cuando tienes que estudiar un tema nuevo, ¿cómo empiezas?",
       options: [
-        { text: "Leo mis apuntes varias veces hasta que me suene todo. 📖", type: "pomodoro" },
+        { text: "Leo mis apuntes varias veces hasta internarlizarlo. 📖", type: "pomodoro" },
         { text: "Me hago preguntas a mí mismo o busco ejercicios. ✍️", type: "recall" },
         { text: "Intento explicárselo a alguien más para ver si lo entiendo. 🗣️", type: "feynman" },
       ],
