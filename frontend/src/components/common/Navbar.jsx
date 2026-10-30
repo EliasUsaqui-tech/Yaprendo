@@ -31,7 +31,7 @@ export default function Navbar() {
           <img 
             src={logo} 
             alt="Yaprendo Logo" 
-            className="h-16 md:h-20 w-auto object-contain scale-150 origin-left -ml-4" 
+            className="h-12 md:h-14 w-auto object-contain" 
           />
           <span className="text-2xl font-bold text-blue-400 tracking-wide ml-2 hidden md:block">
             Yaprendo
