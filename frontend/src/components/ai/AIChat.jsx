@@ -9,7 +9,7 @@ export default function AIChat({ topicName, techniqueName, allTechniques, onTech
   const [messages, setMessages] = useState([
     {
       role: "assistant",
-      content: `¡Hola! Soy tu tutor de IA. Veo que estás estudiando **${topicName}**. ¿En qué te puedo ayudar hoy?`
+      content: `¡Hola! Soy Cachimbo Bot. Veo que estás estudiando **${topicName}**. ¿En qué te puedo ayudar hoy?`
     }
   ]);
   const [input, setInput] = useState("");
@@ -51,7 +51,7 @@ export default function AIChat({ topicName, techniqueName, allTechniques, onTech
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <span className="text-2xl">🤖</span>
-                <h3 className="font-bold text-sm">Tutor IA</h3>
+                <h3 className="font-bold text-sm">Cachimbo Bot</h3>
               </div>
               <button onClick={() => setIsOpen(false)} className="text-purple-300 hover:text-white">✕</button>
             </div>
@@ -100,7 +100,7 @@ export default function AIChat({ topicName, techniqueName, allTechniques, onTech
             {loading && (
               <div className="flex justify-start">
                 <div className="bg-slate-800 text-slate-400 p-3 rounded-xl rounded-bl-none text-xs italic animate-pulse">
-                  El tutor está escribiendo...
+                  Cachimbo Bot está escribiendo...
                 </div>
               </div>
             )}
@@ -128,7 +128,7 @@ export default function AIChat({ topicName, techniqueName, allTechniques, onTech
           onClick={() => setIsOpen(true)}
           className="bg-gradient-to-r from-purple-600 to-blue-600 text-white p-4 rounded-full shadow-2xl hover:scale-110 transition flex items-center gap-2 font-bold"
         >
-          <span className="text-xl">🤖</span> Preguntar a la IA
+          <span className="text-xl">🤖</span> Preguntar a Cachimbo Bot
         </button>
       )}
     </div>
