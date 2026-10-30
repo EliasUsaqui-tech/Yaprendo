@@ -10,7 +10,6 @@ export default function Techniques() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Estados para el Modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedTechnique, setSelectedTechnique] = useState(null);
 
@@ -18,7 +17,13 @@ export default function Techniques() {
     Promise.all([techniqueService.getAll(), courseService.getAll()])
       .then(([techData, courseData]) => {
         setTechniques(techData);
-        setCourses(courseData);
+        // Ordenamos para que Fundamentos salga primero en el modal también
+        const sorted = [...courseData].sort((a, b) => {
+          if (a.code === "FUNCAL") return -1;
+          if (b.code === "FUNCAL") return 1;
+          return 0;
+        });
+        setCourses(sorted);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -35,15 +40,15 @@ export default function Techniques() {
   };
 
   const handleApply = (courseId, courseName) => {
-    // Guardamos el curso y la técnica en el localStorage
     localStorage.setItem("active_course", JSON.stringify({ id: courseId, name: courseName }));
     localStorage.setItem("active_technique", JSON.stringify(selectedTechnique));
-    
-    // Redirigimos al detalle del curso
     navigate(`/courses/${courseId}`);
   };
 
   if (loading) return <Loader />;
+
+  // Lista de cursos bloqueados
+  const lockedCourses = ["CAL1", "FIS1"];
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
@@ -108,19 +113,37 @@ export default function Techniques() {
             </p>
 
             <div className="space-y-3 mb-6">
-              {courses.map((course) => (
-                <button
-                  key={course._id}
-                  onClick={() => handleApply(course._id, course.name)}
-                  className="w-full text-left bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg p-3 transition flex justify-between items-center"
-                >
-                  <div>
-                    <p className="font-medium text-slate-200">{course.name}</p>
-                    <p className="text-xs text-slate-400">{course.code}</p>
-                  </div>
-                  <span className="text-slate-500">→</span>
-                </button>
-              ))}
+              {courses.map((course) => {
+                const courseCode = course.code ? course.code.toUpperCase() : "";
+                const isLocked = lockedCourses.includes(courseCode);
+
+                return (
+                  <button
+                    key={course._id}
+                    onClick={() => !isLocked && handleApply(course._id, course.name)}
+                    disabled={isLocked}
+                    className={`w-full text-left border rounded-lg p-3 transition flex justify-between items-center ${
+                      isLocked 
+                        ? "bg-slate-800/50 border-slate-800 opacity-60 cursor-not-allowed grayscale" 
+                        : "bg-slate-800 hover:bg-slate-700 border-slate-700"
+                    }`}
+                  >
+                    <div>
+                      <p className={`font-medium ${isLocked ? 'text-slate-400' : 'text-slate-200'}`}>
+                        {course.name}
+                      </p>
+                      <p className="text-xs text-slate-500">{course.code}</p>
+                    </div>
+                    {isLocked ? (
+                      <span className="text-[10px] font-bold bg-slate-900 text-slate-400 border border-slate-700 px-2 py-1 rounded">
+                        🔒 Próximamente
+                      </span>
+                    ) : (
+                      <span className="text-slate-500">→</span>
+                    )}
+                  </button>
+                );
+              })}
             </div>
 
             <button 
