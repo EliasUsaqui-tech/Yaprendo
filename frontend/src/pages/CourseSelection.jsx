@@ -26,8 +26,8 @@ export default function CourseSelection() {
 
   if (loading) return <Loader />;
 
-  // Cursos bloqueados
-  const lockedCourses = ["CAL1", "FIS1"];
+  // Cursos bloqueados (vacío: Cálculo 1 y Física 1 ya tienen contenido completo)
+  const lockedCourses = [];
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">

@@ -22,7 +22,9 @@ export const getQuizzes = async (req, res, next) => {
 // GET /api/quizzes/:id  (incluye preguntas SIN la respuesta correcta)
 export const getQuizById = async (req, res, next) => {
   try {
-    const quiz = await Quiz.findById(req.params.id).populate("topic", "name");
+    const quiz = await Quiz.findById(req.params.id)
+      .populate("topic", "name")
+      .populate("course", "name code");
     if (!quiz) return res.status(404).json({ message: "Quiz no encontrado" });
 
     const questions = await Question.find({ quiz: quiz._id })

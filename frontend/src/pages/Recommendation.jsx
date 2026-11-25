@@ -36,9 +36,20 @@ export default function Recommendation() {
         <h1 className="text-3xl font-bold text-slate-100 mb-4">{rec.title}</h1>
         <p className="text-slate-300 mb-8">{rec.desc}</p>
         
+        {/* Ruta guiada (MVP V2): Diagnóstico → Autoevaluación → Práctica o Mentor → Progreso */}
+        <div className="bg-slate-800/60 border border-slate-700 rounded-lg p-4 mb-6 text-sm text-slate-300">
+          <p className="font-semibold text-slate-100 mb-2">Tu ruta de estudio en Yaprendo</p>
+          <ol className="space-y-1 list-decimal list-inside">
+            <li><span className="text-green-400">✓</span> Diagnóstico de técnica (completado)</li>
+            <li>Elige tu curso y rinde la autoevaluación de la semana</li>
+            <li>Practica el tema con tu técnica o contacta a un mentor</li>
+            <li>Revisa tu avance en Progreso</li>
+          </ol>
+        </div>
+
         <div className="flex gap-4">
-          <Link to="/dashboard" className="btn-primary w-full text-center">
-            Ir a mi Dashboard
+          <Link to="/courses" className="btn-primary w-full text-center">
+            Empezar: elegir curso
           </Link>
           <Link to="/techniques" className="btn-secondary w-full text-center">
             Ver biblioteca

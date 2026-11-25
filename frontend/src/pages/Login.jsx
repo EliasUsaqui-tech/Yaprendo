@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import loginBg from "../assets/utec2.jpg";
+import PasswordInput from "../components/common/PasswordInput";
 
 export default function Login() {
   const [email, setEmail] = useState("");
@@ -66,12 +67,9 @@ export default function Login() {
             <label className="text-sm font-medium text-slate-200">
               Contraseña
             </label>
-            <input
-              type="password"
-              className="input-field mt-1"
+            <PasswordInput
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
             />
           </div>
           <button type="submit" disabled={loading} className="btn-primary w-full">

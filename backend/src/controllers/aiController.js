@@ -58,7 +58,7 @@ export const chatWithAI = async (req, res, next) => {
 // @route   POST /api/auth/ai/custom-session
 export const generateCustomSession = async (req, res, next) => {
   try {
-    const { materialText, technique, detailLevel } = req.body;
+    const { materialText, technique, detailLevel, courseName, topicName } = req.body;
 
     if (!materialText) {
       return res.status(400).json({ message: "Falta el texto del material." });
@@ -83,6 +83,7 @@ export const generateCustomSession = async (req, res, next) => {
       Eres un tutor experto de UTEC. Un alumno ha subido su material de clase.
       Debes generar una guía de estudio aplicando ESTRICTAMENTE la técnica de estudio: "${technique}".
       NIVEL DE PROFUNDIDAD REQUERIDO: ${detailInstruction}
+      ${topicName ? `CONTEXTO: El alumno viene de una autoevaluación del tema "${topicName}" del curso ${courseName || ""}. Incluye al final 3 ejercicios de práctica con su solución oculta bajo un encabezado "Soluciones".` : ""}
       
       REGLAS ESTRICTAS DE FORMATO (OBLIGATORIO):
       1. Devuelve la respuesta en formato Markdown puro.

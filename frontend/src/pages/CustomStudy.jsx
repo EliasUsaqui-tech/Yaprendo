@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
@@ -13,6 +13,25 @@ export default function CustomStudy() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
+
+  // Contexto recibido desde el quiz ("Practicar este tema", MVP V2)
+  const [params] = useSearchParams();
+  const navigate = useNavigate();
+  const ctx = {
+    courseId: params.get("courseId") || "",
+    course: params.get("course") || "",
+    topicId: params.get("topicId") || "",
+    topic: params.get("topic") || "",
+    score: params.get("score") || "",
+  };
+  const [topicContent, setTopicContent] = useState("");
+
+  useEffect(() => {
+    if (!ctx.topicId) return;
+    api.get(`/courses/topics/${ctx.topicId}`)
+      .then((r) => setTopicContent(r.data?.content || ""))
+      .catch(() => setTopicContent(""));
+  }, [ctx.topicId]);
 
   // 1. Obtenemos la técnica del test y la traducimos
   const techFromTest = localStorage.getItem("recommended_technique");
@@ -35,6 +54,20 @@ export default function CustomStudy() {
     setError("");
   };
 
+  const requestSession = async (materialText) => {
+    const response = await api.post("/auth/ai/custom-session", {
+      materialText,
+      technique: selectedTechnique,
+      detailLevel,
+      courseName: ctx.course,
+      topicName: ctx.topic,
+    });
+    setResult(response.data);
+  };
+
+  // Lógica dinámica: cortamos el texto según la profundidad elegida
+  const charLimitFor = (level) => (level === "resumido" ? 3000 : level === "completo" ? 8000 : 12000);
+
   const handleGenerate = async () => {
     if (!file) return setError("Por favor, sube un archivo PDF primero.");
     if (file.type !== "application/pdf") return setError("El archivo debe ser un PDF.");
@@ -44,26 +77,30 @@ export default function CustomStudy() {
 
     try {
       const extractedText = await pdfToText(file);
-      
+
       if (!extractedText || extractedText.trim().length < 50) {
         throw new Error("El PDF no tiene suficiente texto o está escaneado como imagen.");
       }
 
-      // LÓGICA DINÁMICA: Cortamos el texto según la profundidad elegida
-      let charLimit = 12000; 
-      if (detailLevel === "resumido") charLimit = 3000;
-      if (detailLevel === "completo") charLimit = 8000;
-
-      const response = await api.post("/auth/ai/custom-session", {
-        materialText: extractedText.slice(0, charLimit),
-        technique: selectedTechnique,
-        detailLevel: detailLevel
-      });
-
-      setResult(response.data);
+      await requestSession(extractedText.slice(0, charLimitFor(detailLevel)));
     } catch (err) {
       console.error(err);
       setError(err.message || "Hubo un error al procesar tu archivo. Intenta con otro PDF.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Práctica directa del tema evaluado, sin necesidad de subir un PDF
+  const handleGenerateFromTopic = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const material = `Curso: ${ctx.course}\nTema: ${ctx.topic}\n\n${topicContent || "(Sin resumen cargado: usa el temario estándar del tema.)"}`;
+      await requestSession(material);
+    } catch (err) {
+      console.error(err);
+      setError("No se pudo generar la práctica del tema. Intenta nuevamente en unos segundos.");
     } finally {
       setLoading(false);
     }
@@ -75,6 +112,32 @@ export default function CustomStudy() {
         <h1 className="text-3xl font-bold text-slate-100 mb-2">Mi Sesión Dinámica</h1>
         <p className="text-slate-400">Sube el PDF de tu clase y la IA creará una guía de estudio personalizada.</p>
       </div>
+
+      {ctx.topic && !result && (
+        <div className="card bg-blue-950/60 border-blue-800 mb-6">
+          <p className="text-sm text-blue-200 font-semibold mb-1">Práctica sugerida desde tu autoevaluación</p>
+          <p className="text-sm text-slate-300 mb-4">
+            Curso: <strong>{ctx.course}</strong> · Tema: <strong>{ctx.topic}</strong>
+            {ctx.score && <> · Resultado: <strong>{ctx.score}%</strong></>}
+          </p>
+          <div className="flex flex-col md:flex-row gap-3">
+            <button
+              onClick={handleGenerateFromTopic}
+              disabled={loading}
+              className={`btn-primary px-6 py-2 ${loading ? "opacity-50" : ""}`}
+            >
+              {loading ? "Generando..." : `✨ Practicar este tema con ${selectedTechnique}`}
+            </button>
+            <button
+              onClick={() => navigate(`/mentors?${new URLSearchParams({ course: ctx.course, topic: ctx.topic, score: ctx.score })}`)}
+              className="btn-secondary px-6 py-2"
+            >
+              🤝 Prefiero hablar con un mentor
+            </button>
+          </div>
+          <p className="text-xs text-slate-400 mt-3">También puedes subir el PDF de tu clase abajo para una guía basada en tu propio material.</p>
+        </div>
+      )}
 
       {!result ? (
         <div className="card bg-slate-900 border-slate-700 text-center py-12">
@@ -131,9 +194,19 @@ export default function CustomStudy() {
         </div>
       ) : (
         <div className="space-y-6">
-          <button onClick={() => setResult(null)} className="text-sm text-blue-400 hover:underline">
-            ← Subir otro archivo
-          </button>
+          <div className="flex flex-wrap gap-4">
+            <button onClick={() => setResult(null)} className="text-sm text-blue-400 hover:underline">
+              ← Generar otra sesión
+            </button>
+            {ctx.courseId && (
+              <button onClick={() => navigate(`/courses/${ctx.courseId}`)} className="text-sm text-blue-400 hover:underline">
+                Volver al curso
+              </button>
+            )}
+            <button onClick={() => navigate("/progress")} className="text-sm text-blue-400 hover:underline">
+              Ver mi progreso →
+            </button>
+          </div>
 
           <div className="card bg-slate-900 border-slate-700">
             <h2 className="text-xl font-bold text-slate-100 mb-4 flex items-center gap-2">

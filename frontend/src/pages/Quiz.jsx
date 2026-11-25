@@ -48,6 +48,16 @@ export default function Quiz() {
 
   if (result) {
     const passed = result.score >= 70;
+    // Contexto que viaja a los siguientes módulos de la ruta guiada
+    const ctx = {
+      courseId: quiz.course?._id || "",
+      course: quiz.course?.name || "",
+      topicId: quiz.topic?._id || "",
+      topic: quiz.topic?.name || "",
+      score: String(result.score),
+    };
+    const practiceParams = new URLSearchParams(ctx).toString();
+    const mentorParams = new URLSearchParams({ course: ctx.course, topic: ctx.topic, score: ctx.score }).toString();
     return (
       <div className="max-w-3xl mx-auto px-4 py-8">
         <div
@@ -103,18 +113,48 @@ export default function Quiz() {
           })}
         </div>
 
-        <div className="flex gap-3 mt-8">
+        {/* ====== NODO DE DECISIÓN POST-QUIZ (MVP V2) ======
+            Hallazgos 2.2.3 y 2.2.4 de la Ronda 01: el quiz ya no es un punto muerto.
+            Salida 1: refuerzo autónomo (Sesión Dinámica con el tema precargado).
+            Salida 2: acompañamiento entre pares (mentores filtrados por curso + tema). */}
+        <div className="card mt-8 bg-slate-900 border-slate-700">
+          <h2 className="text-lg font-semibold text-slate-100 mb-1">¿Qué sigue?</h2>
+          <p className="text-sm text-slate-400 mb-4">
+            {passed
+              ? "Refuerza lo aprendido practicando el tema, o pasa a tu progreso."
+              : "Te recomendamos practicar este tema con tu técnica o pedir apoyo a un mentor."}
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <button
+              onClick={() => navigate(`/custom-study?${practiceParams}`)}
+              className="btn-primary py-3"
+            >
+              🧠 Practicar este tema
+            </button>
+            <button
+              onClick={() => navigate(`/mentors?${mentorParams}`)}
+              className={`${passed ? "btn-secondary" : "btn-primary bg-emerald-600 hover:bg-emerald-500"} py-3`}
+            >
+              🤝 Contactar mentor sobre este tema
+            </button>
+          </div>
+        </div>
+
+        <div className="flex flex-wrap gap-3 mt-6">
           <button
-            onClick={() => navigate("/courses")}
+            onClick={() => navigate(quiz.course?._id ? `/courses/${quiz.course._id}` : "/courses")}
             className="btn-secondary"
           >
-            Volver a cursos
+            Volver al curso
           </button>
           <button
             onClick={() => window.location.reload()}
-            className="btn-primary"
+            className="btn-secondary"
           >
             Reintentar quiz
+          </button>
+          <button onClick={() => navigate("/progress")} className="btn-secondary">
+            Ver mi progreso
           </button>
         </div>
       </div>
