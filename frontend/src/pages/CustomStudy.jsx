@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import ReactMarkdown from "react-markdown";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
@@ -7,6 +7,8 @@ import remarkGfm from "remark-gfm";
 import api from "../services/api";
 import pdfToText from "react-pdftotext";
 import rehypeRaw from "rehype-raw";
+import { getActiveTechniqueType } from "../utils/technique";
+import MaterialQuiz from "../components/study/MaterialQuiz";
 
 export default function CustomStudy() {
   const [file, setFile] = useState(null);
@@ -14,8 +16,31 @@ export default function CustomStudy() {
   const [result, setResult] = useState(null);
   const [error, setError] = useState("");
 
+  // Contexto recibido desde el quiz ("Practicar este tema", MVP V2)
+  const [params] = useSearchParams();
+  const navigate = useNavigate();
+  const ctx = {
+    courseId: params.get("courseId") || "",
+    course: params.get("course") || "",
+    topicId: params.get("topicId") || "",
+    topic: params.get("topic") || "",
+    score: params.get("score") || "",
+  };
+  const [topicContent, setTopicContent] = useState("");
+  // Material propio del estudiante (cualquier curso): texto extraído, nombre y modo de vista
+  const [materialText, setMaterialText] = useState("");
+  const [subject, setSubject] = useState("");
+  const [quizOnly, setQuizOnly] = useState(false);
+
+  useEffect(() => {
+    if (!ctx.topicId) return;
+    api.get(`/courses/topics/${ctx.topicId}`)
+      .then((r) => setTopicContent(r.data?.content || ""))
+      .catch(() => setTopicContent(""));
+  }, [ctx.topicId]);
+
   // 1. Obtenemos la técnica del test y la traducimos
-  const techFromTest = localStorage.getItem("recommended_technique");
+  const techFromTest = getActiveTechniqueType(); // misma técnica que usa el resto de la app
   
   const getTechniqueName = (tech) => {
     if (tech === "feynman") return "Feynman";
@@ -35,6 +60,20 @@ export default function CustomStudy() {
     setError("");
   };
 
+  const requestSession = async (materialText) => {
+    const response = await api.post("/auth/ai/custom-session", {
+      materialText,
+      technique: selectedTechnique,
+      detailLevel,
+      courseName: ctx.course,
+      topicName: ctx.topic,
+    });
+    setResult(response.data);
+  };
+
+  // Lógica dinámica: cortamos el texto según la profundidad elegida
+  const charLimitFor = (level) => (level === "resumido" ? 3000 : level === "completo" ? 8000 : 12000);
+
   const handleGenerate = async () => {
     if (!file) return setError("Por favor, sube un archivo PDF primero.");
     if (file.type !== "application/pdf") return setError("El archivo debe ser un PDF.");
@@ -44,26 +83,66 @@ export default function CustomStudy() {
 
     try {
       const extractedText = await pdfToText(file);
-      
+
       if (!extractedText || extractedText.trim().length < 50) {
         throw new Error("El PDF no tiene suficiente texto o está escaneado como imagen.");
       }
 
-      // LÓGICA DINÁMICA: Cortamos el texto según la profundidad elegida
-      let charLimit = 12000; 
-      if (detailLevel === "resumido") charLimit = 3000;
-      if (detailLevel === "completo") charLimit = 8000;
-
-      const response = await api.post("/auth/ai/custom-session", {
-        materialText: extractedText.slice(0, charLimit),
-        technique: selectedTechnique,
-        detailLevel: detailLevel
-      });
-
-      setResult(response.data);
+      setMaterialText(extractedText.slice(0, 12000));
+      setQuizOnly(false);
+      await requestSession(extractedText.slice(0, charLimitFor(detailLevel)));
     } catch (err) {
       console.error(err);
       setError(err.message || "Hubo un error al procesar tu archivo. Intenta con otro PDF.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Autoevaluación directa del PDF (sin generar la guía primero)
+  const handleQuizOnly = async () => {
+    if (!file) return setError("Por favor, sube un archivo PDF primero.");
+    if (file.type !== "application/pdf") return setError("El archivo debe ser un PDF.");
+    setLoading(true);
+    setError("");
+    try {
+      const extractedText = await pdfToText(file);
+      if (!extractedText || extractedText.trim().length < 50) {
+        throw new Error("El PDF no tiene suficiente texto o está escaneado como imagen.");
+      }
+      setMaterialText(extractedText.slice(0, 12000));
+      setQuizOnly(true);
+      setResult({ summary: null });
+    } catch (err) {
+      setError(err.message || "No se pudo leer tu PDF.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Desde el resultado del quiz: volver a la guía con la técnica activa
+  const practiceFromQuiz = async () => {
+    setQuizOnly(false);
+    setLoading(true);
+    try {
+      await requestSession(materialText.slice(0, charLimitFor(detailLevel)));
+    } catch {
+      setError("No se pudo generar la guía. Intenta de nuevo.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Práctica directa del tema evaluado, sin necesidad de subir un PDF
+  const handleGenerateFromTopic = async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const material = `Curso: ${ctx.course}\nTema: ${ctx.topic}\n\n${topicContent || "(Sin resumen cargado: usa el temario estándar del tema.)"}`;
+      await requestSession(material);
+    } catch (err) {
+      console.error(err);
+      setError("No se pudo generar la práctica del tema. Intenta nuevamente en unos segundos.");
     } finally {
       setLoading(false);
     }
@@ -73,8 +152,34 @@ export default function CustomStudy() {
     <div className="max-w-4xl mx-auto px-4 py-8">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-100 mb-2">Mi Sesión Dinámica</h1>
-        <p className="text-slate-400">Sube el PDF de tu clase y la IA creará una guía de estudio personalizada.</p>
+        <p className="text-slate-400">Funciona con <strong>cualquier curso</strong>: sube el PDF de tu clase, estúdialo con tu técnica y autoevalúate con preguntas creadas a partir de tu propio material.</p>
       </div>
+
+      {ctx.topic && !result && (
+        <div className="card bg-blue-950/60 border-blue-800 mb-6">
+          <p className="text-sm text-blue-200 font-semibold mb-1">Práctica sugerida desde tu autoevaluación</p>
+          <p className="text-sm text-slate-300 mb-4">
+            Curso: <strong>{ctx.course}</strong> · Tema: <strong>{ctx.topic}</strong>
+            {ctx.score && <> · Resultado: <strong>{ctx.score}%</strong></>}
+          </p>
+          <div className="flex flex-col md:flex-row gap-3">
+            <button
+              onClick={handleGenerateFromTopic}
+              disabled={loading}
+              className={`btn-primary px-6 py-2 ${loading ? "opacity-50" : ""}`}
+            >
+              {loading ? "Generando..." : `✨ Practicar este tema con ${selectedTechnique}`}
+            </button>
+            <button
+              onClick={() => navigate(`/mentors?${new URLSearchParams({ course: ctx.course, topic: ctx.topic, score: ctx.score })}`)}
+              className="btn-secondary px-6 py-2"
+            >
+              🤝 Prefiero hablar con un mentor
+            </button>
+          </div>
+          <p className="text-xs text-slate-400 mt-3">También puedes subir el PDF de tu clase abajo para una guía basada en tu propio material.</p>
+        </div>
+      )}
 
       {!result ? (
         <div className="card bg-slate-900 border-slate-700 text-center py-12">
@@ -93,6 +198,17 @@ export default function CustomStudy() {
             onChange={handleFileChange}
             className="block w-full max-w-sm mx-auto mb-6 text-sm text-slate-400 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-500 cursor-pointer"
           />
+
+          <div className="max-w-sm mx-auto mb-6 text-left">
+            <label className="text-sm font-medium text-slate-300 block mb-2">¿De qué curso o tema es? (opcional)</label>
+            <input
+              type="text"
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              placeholder="Ej.: Química General – Estequiometría"
+              className="w-full bg-slate-800 border border-slate-600 text-white text-sm rounded-lg p-2.5"
+            />
+          </div>
 
           <div className="max-w-sm mx-auto mb-6 text-left">
             <label className="text-sm font-medium text-slate-300 block mb-2">Técnica a aplicar:</label>
@@ -128,13 +244,37 @@ export default function CustomStudy() {
           >
             {loading ? "Procesando..." : "✨ Generar Sesión"}
           </button>
+          <button
+            onClick={handleQuizOnly}
+            disabled={loading || !file}
+            className={`btn-secondary px-8 py-3 ml-0 md:ml-3 mt-3 md:mt-0 ${loading || !file ? "opacity-50" : ""}`}
+          >
+            📝 Solo autoevaluarme
+          </button>
         </div>
       ) : (
         <div className="space-y-6">
-          <button onClick={() => setResult(null)} className="text-sm text-blue-400 hover:underline">
-            ← Subir otro archivo
-          </button>
+          <div className="flex flex-wrap gap-4">
+            <button onClick={() => { setResult(null); setQuizOnly(false); }} className="text-sm text-blue-400 hover:underline">
+              ← Generar otra sesión
+            </button>
+            {ctx.courseId && (
+              <button onClick={() => navigate(`/courses/${ctx.courseId}`)} className="text-sm text-blue-400 hover:underline">
+                Volver al curso
+              </button>
+            )}
+            <button onClick={() => navigate("/progress")} className="text-sm text-blue-400 hover:underline">
+              Ver mi progreso →
+            </button>
+          </div>
 
+          {quizOnly && materialText && (
+            <MaterialQuiz key="quiz-only" materialText={materialText} subject={subject} technique={selectedTechnique} onPractice={practiceFromQuiz} autoStart />
+          )}
+
+          {loading && !result?.summary && <div className="card bg-slate-900 border-slate-700 text-center text-slate-300">Generando tu guía...</div>}
+
+          {result?.summary && (
           <div className="card bg-slate-900 border-slate-700">
             <h2 className="text-xl font-bold text-slate-100 mb-4 flex items-center gap-2">
               📖 Guía de Estudio ({selectedTechnique})
@@ -171,6 +311,12 @@ export default function CustomStudy() {
               </ReactMarkdown>
             </div>
           </div>
+          )}
+
+          {/* Cierre de la ruta con material propio: autoevaluación tras estudiar la guía */}
+          {result?.summary && materialText && !quizOnly && (
+            <MaterialQuiz key="after-guide" materialText={materialText} subject={subject} technique={selectedTechnique} onPractice={() => window.scrollTo({ top: 0, behavior: "smooth" })} />
+          )}
         </div>
       )}
     </div>

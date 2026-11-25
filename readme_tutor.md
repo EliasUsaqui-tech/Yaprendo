@@ -69,3 +69,26 @@ App en `http://localhost:5173`.
 * **Técnicas de estudio:** Biblioteca de métodos de estudio activos (Active Recall, Repetición Espaciada, Feynman), organizados por curso y tema, con descripción y pasos concretos.
 * **Mentores:** Directorio de estudiantes de ciclos superiores que ofrecen apoyo en cursos específicos. Muestra su perfil, ciclo, cursos que domina y medios de contacto.
 * **Progreso:** Panel visual del avance del estudiante por curso. Muestra el porcentaje de temas dominados, en progreso y pendientes, en base a los resultados de las autoevaluaciones.
+
+---
+
+## 🆕 Versión final (MVP V2)
+
+Mejoras implementadas a partir de la Ronda 01 de validación:
+
+* **Mostrar/Ocultar contraseña** en Login y Registro, con validación en tiempo real del correo `@utec.edu.pe` y de la longitud de la contraseña.
+* **Panel "¿Qué sigue?" al terminar cada quiz**, con dos salidas:
+  * **Practicar este tema**: abre Mi Sesión Dinámica con el curso, el tema y el puntaje ya cargados, y genera una práctica sin subir PDF.
+  * **Contactar mentor sobre este tema**: abre el directorio filtrado por curso y arma el correo al mentor con el tema y el puntaje.
+* **Ruta guiada**: Diagnóstico → Autoevaluación → Práctica o Mentor → Progreso.
+* **Cálculo 1** (16 semanas) y **Física 1** (14 semanas) desbloqueados, con resumen teórico y autoevaluación de 4 preguntas por semana (`backend/src/seeders/data/`).
+* **La técnica de estudio ahora cambia cómo se estudia cada tema**:
+  * **Feynman**: el alumno explica el tema con sus palabras y la IA señala aciertos y vacíos.
+  * **Active Recall**: el resumen se oculta hasta que el alumno escribe lo que recuerda; luego se autoevalúa y puede generar preguntas de recuerdo.
+  * **Pomodoro**: temporizador 25/5 dentro del tema, con conteo de ciclos.
+  * **Resolución de Problemas**: la IA genera un ejercicio tipo examen y corrige la solución por pasos.
+  * La técnica del test se usa por defecto en temas, Sesión Dinámica y Cachimbo Bot, y cada quiz guarda con qué técnica se estudió. **Progreso** muestra el rendimiento promedio por técnica.
+* **Ruta completa con cualquier curso**: en Mi Sesión Dinámica el estudiante sube el PDF de su clase, lo estudia con su técnica y se autoevalúa con 5 preguntas que la IA crea a partir de ese material (`POST /api/auth/ai/material-quiz`). El resultado lleva al mismo panel de siguiente paso (practicar o mentor). Los tres cursos con contenido propio funcionan como piloto.
+* Nuevo mentor demo: `carlos@utec.edu.pe / carlos123` (Física 1 y Cálculo 1).
+
+> Después de actualizar, ejecuta `npm run seed` en `backend` para cargar el contenido nuevo.

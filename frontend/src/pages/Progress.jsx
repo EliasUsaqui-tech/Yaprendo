@@ -2,9 +2,11 @@ import { useEffect, useState } from "react";
 import { progressService } from "../services/progressService";
 import Loader from "../components/common/Loader";
 import { Link } from "react-router-dom";
+import { TECHNIQUE_LABELS } from "../utils/technique";
 
 export default function Progress() {
   const [coursesProgress, setCoursesProgress] = useState([]);
+  const [techniqueStats, setTechniqueStats] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -12,6 +14,7 @@ export default function Progress() {
       .then((data) => {
         // Ajustamos para leer la nueva estructura del backend
         setCoursesProgress(data.coursesProgress || []);
+        setTechniqueStats(data.techniqueStats || []);
       })
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -37,6 +40,27 @@ export default function Progress() {
         </div>
       ) : (
         <div className="space-y-6">
+          {/* RENDIMIENTO POR TÉCNICA: muestra con qué técnica le va mejor al alumno */}
+          {techniqueStats.length > 0 && (
+            <div className="card">
+              <h2 className="text-lg font-bold text-slate-100 mb-1">Rendimiento por técnica de estudio</h2>
+              <p className="text-xs text-slate-400 mb-4">Puntaje promedio de tus quizzes según la técnica con la que estudiaste el tema.</p>
+              <div className="space-y-3">
+                {techniqueStats.map((t, i) => (
+                  <div key={t.technique}>
+                    <div className="flex justify-between text-sm mb-1">
+                      <span className="text-slate-200">{i === 0 && techniqueStats.length > 1 ? "⭐ " : ""}{TECHNIQUE_LABELS[t.technique] || t.technique}</span>
+                      <span className="text-slate-400">{t.avgScore}% · {t.attempts} {t.attempts === 1 ? "quiz" : "quizzes"}</span>
+                    </div>
+                    <div className="w-full bg-slate-800 rounded-full h-2 overflow-hidden">
+                      <div className="h-2 bg-blue-500 rounded-full" style={{ width: `${t.avgScore}%` }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
           {coursesProgress.map((course) => (
             <div key={course.courseId} className="card">
               <div className="flex justify-between items-end mb-4">

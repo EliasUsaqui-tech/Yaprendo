@@ -7,8 +7,47 @@ import Topic from "../models/Topic.js";
 import StudyTechnique from "../models/StudyTechnique.js";
 import Quiz from "../models/Quiz.js";
 import Question from "../models/Question.js";
+import { calculo1 } from "./data/calculo1.js";
+import { fisica1 } from "./data/fisica1.js";
+
+// Crea temas (con resumen) y quizzes (con preguntas) a partir de un arreglo de semanas
+const seedCourseContent = async (course, weeks) => {
+  const topics = [];
+  for (let i = 0; i < weeks.length; i++) {
+    const w = weeks[i];
+    const topic = await Topic.create({ name: w.name, description: w.desc, content: w.content, course: course._id, order: i + 1 });
+    topics.push(topic);
+
+    const quiz = await Quiz.create({
+      title: w.quiz.title,
+      description: `Evalúa tus conocimientos sobre la ${w.name}.`,
+      topic: topic._id,
+      course: course._id,
+      difficulty: "intermedio",
+      estimatedMinutes: 10,
+    });
+    const questionIds = [];
+    for (let j = 0; j < w.quiz.qs.length; j++) {
+      const q = w.quiz.qs[j];
+      const question = await Question.create({ quiz: quiz._id, statement: q.q, options: q.opts, correctIndex: q.ans, explanation: q.exp, order: j + 1 });
+      questionIds.push(question._id);
+    }
+    quiz.questions = questionIds;
+    await quiz.save();
+  }
+  course.topics = topics.map((t) => t._id);
+  await course.save();
+  console.log(`  - ${course.name}: ${weeks.length} semanas con resumen y autoevaluación`);
+};
 
 const run = async () => {
+  // Protección: el seed borra y recrea cursos, temas y quizzes. No correrlo contra producción por accidente.
+  const uri = process.env.MONGO_URI || "";
+  if (!/127\.0\.0\.1|localhost/.test(uri) && !process.argv.includes("--force")) {
+    console.error("⚠️  MONGO_URI no apunta a una base local. El seed borraría cursos, temas y quizzes de esa base.");
+    console.error("    Si de verdad quieres hacerlo, ejecuta: npm run seed -- --force");
+    process.exit(1);
+  }
   await connectDB();
 
   console.log("Limpiando cursos, temas, técnicas y quizzes...");
@@ -34,20 +73,20 @@ const run = async () => {
     await User.create({ name: "Andrea Mentor", email: "andrea@utec.edu.pe", password: "andrea123", cycle: "6", role: "mentor", bio: "Estudiante de 6to ciclo.", expertise: ["Cálculo 1", "Fundamentos del Cálculo"] });
   }
 
+  const carlosExists = await User.findOne({ email: "carlos@utec.edu.pe" });
+  if (!carlosExists) {
+    await User.create({ name: "Carlos Mentor", email: "carlos@utec.edu.pe", password: "carlos123", cycle: "7", role: "mentor", bio: "Estudiante de 7mo ciclo. Apoyo en Física 1 y Cálculo 1.", expertise: ["Física 1", "Cálculo 1"] });
+  }
+
   console.log("Creando cursos...");
   const calc1 = await Course.create({ name: "Cálculo 1", code: "CAL1", description: "Límites, derivadas e integrales.", cycle: "1", color: "#1e40af" });
   const fundCalc = await Course.create({ name: "Fundamentos del Cálculo", code: "FUNCAL", description: "Álgebra, trigonometría, logaritmos y vectores.", cycle: "1", color: "#059669" });
   const fisica = await Course.create({ name: "Física 1", code: "FIS1", description: "Cinemática, dinámica y leyes de Newton.", cycle: "1", color: "#dc2626" });
 
-  // Cálculo 1
-  const semanasCalc = ["Semana 1: Funciones y Modelos", "Semana 2: Tipos de Funciones", "Semana 3: Funciones Especiales", "Semana 4: Límites y Continuidad", "Semana 5: Definición de Derivada", "Semana 6: Reglas de Derivación", "Semana 7: Aplicaciones de la Derivada", "Semana 8: Diferenciales", "Semana 9: Velocidades Relacionadas", "Semana 10: Repaso y Problemas", "Semana 11: Integrales Indefinidas", "Semana 12: Sumas de Riemann", "Semana 13: Integral Definida", "Semana 14: Áreas y Valor Promedio", "Semana 15: Ecuaciones Diferenciales", "Semana 16: Repaso Final"];
-  const topicsCalc = [];
-  for (let i = 0; i < semanasCalc.length; i++) {
-    const topic = await Topic.create({ name: semanasCalc[i], description: "Tema del sílabo.", course: calc1._id, order: i + 1 });
-    topicsCalc.push(topic);
-  }
-  calc1.topics = topicsCalc.map(t => t._id);
-  await calc1.save();
+  // Cálculo 1 y Física 1 (contenido completo en ./data)
+  console.log("📘 Creando contenido de Cálculo 1 y Física 1...");
+  await seedCourseContent(calc1, calculo1);
+  await seedCourseContent(fisica, fisica1);
 
   // Fundamentos del Cálculo (11 Semanas con formato Markdown/LaTeX)
   console.log("📖 Creando semanas de Fundamentos del Cálculo...");
@@ -135,11 +174,6 @@ const run = async () => {
   }
   fundCalc.topics = topicsFund.map(t => t._id);
   await fundCalc.save();
-
-  // Física
-  const tCinematica = await Topic.create({ name: "Cinemática", description: "MRU, MRUV y caída libre.", course: fisica._id, order: 1 });
-  fisica.topics = [tCinematica._id];
-  await fisica.save();
 
   // Técnicas
   console.log("🧠 Creando técnicas...");
@@ -288,31 +322,6 @@ const run = async () => {
     quiz.questions = questionIds;
     await quiz.save();
     console.log(`  - Creado quiz: ${data.title}`);
-  }
-
-  // Quizzes genéricos para Cálculo 1
-  for (let i = 0; i < topicsCalc.length; i++) {
-    const topic = topicsCalc[i];
-    const quiz = await Quiz.create({
-      title: `Quiz Rápido: ${topic.name.split(': ')[1]}`,
-      description: `Comprueba tu comprensión de la ${topic.name}.`,
-      topic: topic._id,
-      course: calc1._id,
-      difficulty: "intermedio",
-      estimatedMinutes: 5,
-    });
-
-    const q1 = await Question.create({
-      quiz: quiz._id,
-      statement: `¿Cuál es el concepto principal de la ${topic.name}?`,
-      options: ["Aplicar fórmulas memorizadas", "Comprender el análisis matemático", "Resolver problemas sin lógica", "Ninguna de las anteriores"],
-      correctIndex: 1,
-      explanation: "El curso busca desarrollar capacidades de razonamiento y modelación, no solo memorización.",
-      order: 1
-    });
-
-    quiz.questions = [q1._id];
-    await quiz.save();
   }
 
   console.log("\nSeed completado con éxito.");

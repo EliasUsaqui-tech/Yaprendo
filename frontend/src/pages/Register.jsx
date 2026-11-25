@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from "../hooks/useAuth";
 import { AVATAR_STYLES, getAvatarUrl } from "../utils/avatars"; // Importamos las nuevas funciones
+import PasswordInput from "../components/common/PasswordInput";
 
 export default function Register() {
   const [form, setForm] = useState({
@@ -159,17 +160,19 @@ export default function Register() {
               onChange={handleChange}
               required
             />
+            {/* Validación en tiempo real del dominio institucional (mejora V2) */}
+            {form.email.includes("@") && !form.email.toLowerCase().endsWith("@utec.edu.pe") && (
+              <p className="text-xs text-orange-300 mt-1">Usa tu correo institucional terminado en @utec.edu.pe</p>
+            )}
           </div>
           <div>
             <label className="text-sm font-medium text-slate-300">Contraseña</label>
-            <input
-              type="password"
-              name="password"
-              className="input-field mt-1"
+            <PasswordInput
+              name="new-password"
               value={form.password}
-              onChange={handleChange}
+              onChange={(e) => handleChange({ target: { name: "password", value: e.target.value } })}
               minLength={6}
-              required
+              showHint
             />
           </div>
 

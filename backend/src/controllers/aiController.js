@@ -16,8 +16,10 @@ export const chatWithAI = async (req, res, next) => {
       Actualmente está aplicando la técnica de estudio: "${techniqueName}".
 
       Tu objetivo es guiarlo usando esa técnica específica. 
-      - Si es Feynman, pídele que te explique el concepto con sus propias palabras.
-      - Si es Active Recall, hazle preguntas cortas sobre el tema.
+      - Si es Feynman, pídele que te explique el concepto con sus propias palabras y señala los vacíos.
+      - Si es Active Recall, no le des la respuesta de inmediato: hazle preguntas cortas y deja que intente recordar.
+      - Si es Pomodoro, mantén respuestas breves y enfocadas en una sola tarea del bloque de 25 minutos.
+      - Si es Resolución de Problemas, guíalo por pasos (datos, plan, solución, verificación) sin resolverle todo.
       - Sé motivador, breve y usa un tono amigable.
       - Si usas matemáticas, usa formato Markdown y LaTeX (ejemplo: $x^2$ o $$\\int x dx$$).
     `;
@@ -58,7 +60,7 @@ export const chatWithAI = async (req, res, next) => {
 // @route   POST /api/auth/ai/custom-session
 export const generateCustomSession = async (req, res, next) => {
   try {
-    const { materialText, technique, detailLevel } = req.body;
+    const { materialText, technique, detailLevel, courseName, topicName } = req.body;
 
     if (!materialText) {
       return res.status(400).json({ message: "Falta el texto del material." });
@@ -83,6 +85,7 @@ export const generateCustomSession = async (req, res, next) => {
       Eres un tutor experto de UTEC. Un alumno ha subido su material de clase.
       Debes generar una guía de estudio aplicando ESTRICTAMENTE la técnica de estudio: "${technique}".
       NIVEL DE PROFUNDIDAD REQUERIDO: ${detailInstruction}
+      ${topicName ? `CONTEXTO: El alumno viene de una autoevaluación del tema "${topicName}" del curso ${courseName || ""}. Incluye al final 3 ejercicios de práctica con su solución oculta bajo un encabezado "Soluciones".` : ""}
       
       REGLAS ESTRICTAS DE FORMATO (OBLIGATORIO):
       1. Devuelve la respuesta en formato Markdown puro.
@@ -126,5 +129,129 @@ export const generateCustomSession = async (req, res, next) => {
   } catch (error) {
     console.error("Error en IA custom:", error.message);
     next(new Error("Error al generar la sesión personalizada"));
+  }
+};
+
+// Llamada común a Groq (modelo openai/gpt-oss-120b)
+const callGroq = async (systemPrompt, userPrompt, maxTokens = 1200) => {
+  const response = await axios.post(
+    "https://api.groq.com/openai/v1/chat/completions",
+    {
+      model: "openai/gpt-oss-120b",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      temperature: 0.5,
+      max_tokens: maxTokens,
+    },
+    { headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}`, "Content-Type": "application/json" } }
+  );
+  return response.data.choices[0].message.content;
+};
+
+// @route   POST /api/auth/ai/technique
+// Actividades de práctica que dependen de la técnica elegida en el tema
+export const techniqueActivity = async (req, res, next) => {
+  try {
+    const { mode, topicName = "", topicContent = "", studentText = "", problemText = "" } = req.body;
+    const base = `Eres un tutor de UTEC para estudiantes de primer ciclo. Tema: "${topicName}".
+Resumen oficial del tema (úsalo como referencia de lo correcto):
+---
+${String(topicContent).slice(0, 4000)}
+---
+Responde en español, en Markdown, con toda expresión matemática entre signos de dólar ($...$). Sé breve y motivador.`;
+
+    const prompts = {
+      feynman: [
+        `${base}
+El estudiante aplicó la Técnica Feynman: explicó el tema con sus palabras. Evalúa su explicación con esta estructura:
+**Lo que explicaste bien** (2-3 viñetas), **Vacíos o errores** (2-3 viñetas, concretos), **Explicación más simple** (2-3 oraciones) y **Pregunta para seguir** (1 pregunta).`,
+        `Mi explicación:\n${String(studentText).slice(0, 3000)}`,
+      ],
+      recall: [
+        `${base}
+El estudiante aplica Active Recall. Genera 5 preguntas cortas de recuerdo sobre el tema, numeradas, de menor a mayor dificultad. Después agrega un encabezado "Respuestas" con respuestas breves, para que las revise solo al final.`,
+        "Genera mis preguntas de recuerdo.",
+      ],
+      problem: [
+        `${base}
+El estudiante aplica Resolución de Problemas. Plantea UN ejercicio tipo examen de dificultad media sobre el tema, con datos numéricos concretos. Muestra solo el enunciado: NO incluyas la solución.`,
+        "Dame un ejercicio.",
+      ],
+      "problem-check": [
+        `${base}
+Corrige la solución del estudiante al ejercicio dado. Indica si el resultado es correcto, en qué paso (Datos, Plan, Solución o Verificación) se equivocó si hubo error, y muestra la solución correcta paso a paso.`,
+        `Ejercicio:\n${String(problemText).slice(0, 2000)}\n\nMi solución:\n${String(studentText).slice(0, 3000)}`,
+      ],
+    };
+
+    const prompt = prompts[mode];
+    if (!prompt) return res.status(400).json({ message: "Modo de técnica no válido" });
+
+    const reply = await callGroq(prompt[0], prompt[1]);
+    res.json({ reply });
+  } catch (error) {
+    console.error("Error en IA técnica:", error.response?.data || error.message);
+    next(new Error("Error al generar la actividad de la técnica"));
+  }
+};
+
+// Extrae el primer objeto JSON de una respuesta del modelo (puede venir con texto o ``` alrededor)
+const parseJsonObject = (text) => {
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start === -1 || end <= start) throw new Error("La IA no devolvió JSON");
+  return JSON.parse(text.slice(start, end + 1));
+};
+
+// @route   POST /api/auth/ai/material-quiz
+// Autoevaluación generada a partir del material del propio estudiante (cualquier curso)
+export const materialQuiz = async (req, res, next) => {
+  try {
+    const { materialText = "", subject = "" } = req.body;
+    if (String(materialText).trim().length < 50) {
+      return res.status(400).json({ message: "El material no tiene suficiente texto" });
+    }
+
+    const system = `Eres un docente universitario que prepara autoevaluaciones para estudiantes de primer ciclo.
+Crea EXACTAMENTE 5 preguntas de opción múltiple basadas ÚNICAMENTE en el material dado${subject ? ` (curso o tema: "${subject}")` : ""}.
+Reglas:
+- Cada pregunta tiene 4 opciones y solo una correcta; distractores plausibles.
+- Mezcla comprensión de conceptos y aplicación (cálculos sencillos si el material los tiene).
+- Varía la posición de la respuesta correcta.
+- Expresiones matemáticas entre signos de dólar ($...$).
+- Explicación breve (1-2 oraciones) de por qué la respuesta es correcta.
+Responde SOLO con JSON válido, sin texto adicional, con esta forma:
+{"questions":[{"statement":"...","options":["...","...","...","..."],"correctIndex":0,"explanation":"..."}]}`;
+
+    const raw = await callGroq(system, `MATERIAL:\n${String(materialText).slice(0, 12000)}`, 2500);
+    const parsed = parseJsonObject(raw);
+
+    // Validación: descartamos preguntas mal formadas en lugar de mostrarlas rotas
+    const questions = (parsed.questions || [])
+      .filter(
+        (q) =>
+          q &&
+          typeof q.statement === "string" &&
+          Array.isArray(q.options) &&
+          q.options.length === 4 &&
+          Number.isInteger(q.correctIndex) &&
+          q.correctIndex >= 0 &&
+          q.correctIndex < 4
+      )
+      .slice(0, 5)
+      .map((q) => ({
+        statement: q.statement,
+        options: q.options.map(String),
+        correctIndex: q.correctIndex,
+        explanation: String(q.explanation || ""),
+      }));
+
+    if (questions.length < 3) throw new Error("Preguntas insuficientes");
+    res.json({ questions });
+  } catch (error) {
+    console.error("Error en quiz de material:", error.response?.data || error.message);
+    next(new Error("Error al generar la autoevaluación del material"));
   }
 };

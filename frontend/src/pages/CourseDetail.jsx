@@ -48,7 +48,7 @@ export default function CourseDetail() {
   // ==========================================
   // VALIDACIÓN DE SEGURIDAD (CURSOS BLOQUEADOS)
   // ==========================================
-  const lockedCourses = ["CAL1", "FIS1"];
+  const lockedCourses = []; // Cálculo 1 y Física 1 desbloqueados en la versión final
   const courseCode = course.code ? course.code.toUpperCase() : "";
 
   if (lockedCourses.includes(courseCode)) {
