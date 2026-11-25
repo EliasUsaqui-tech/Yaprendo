@@ -6,6 +6,8 @@ import rehypeKatex from "rehype-katex";
 import api from "../services/api";
 import Loader from "../components/common/Loader";
 import AIChat from "../components/ai/AIChat";
+import TechniquePractice from "../components/study/TechniquePractice";
+import { getActiveTechniqueType, setActiveTechniqueType } from "../utils/technique";
 
 export default function TopicDetail() {
   const { id } = useParams(); 
@@ -18,6 +20,15 @@ export default function TopicDetail() {
   
   // ESTADO NUEVO PARA CONTROLAR LA PANTALLA DIVIDIDA
   const [isChatExpanded, setIsChatExpanded] = useState(false);
+  // Active Recall oculta el resumen hasta que el alumno intenta recordar
+  const [summaryRevealed, setSummaryRevealed] = useState(false);
+
+  const changeTechnique = (selected) => {
+    if (!selected) return;
+    setTechnique(selected);
+    setActiveTechniqueType(selected.type);
+    setSummaryRevealed(false);
+  };
 
   const getTechColor = (type) => {
     switch (type) {
@@ -39,7 +50,12 @@ export default function TopicDetail() {
     ])
       .then(([topicData, techData, quizData]) => {
         setTopic(topicData || { name: "Detalle del tema", description: "Estudiando...", content: "", course: "" }); 
-        if (techData && techData.length > 0) setTechnique(techData[0]);
+        // La técnica por defecto es la del estudiante (test o elección previa), no la primera de la lista
+        if (techData && techData.length > 0) {
+          const preferred = getActiveTechniqueType();
+          setTechnique(techData.find((t) => t.type === preferred) || techData[0]);
+        }
+        setSummaryRevealed(false);
         setAllTechniques(techData || []); 
         setQuiz(quizData && quizData.length > 0 ? quizData[0] : null);
       })
@@ -74,10 +90,7 @@ export default function TopicDetail() {
               
               <select 
                 value={technique?._id || ""}
-                onChange={(e) => {
-                  const selected = allTechniques.find(t => t._id === e.target.value);
-                  setTechnique(selected);
-                }}
+                onChange={(e) => changeTechnique(allTechniques.find(t => t._id === e.target.value))}
                 className="bg-slate-900 border border-slate-700 text-slate-100 text-lg font-bold rounded-lg px-4 py-2 w-full md:w-2/3 focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
               >
                 {allTechniques.map(t => (
@@ -113,12 +126,30 @@ export default function TopicDetail() {
           )}
         </div>
 
+        {/* ====== PRÁCTICA SEGÚN LA TÉCNICA (la técnica cambia cómo se estudia) ====== */}
+        {technique && (
+          <TechniquePractice
+            key={`${id}-${technique.type}`}
+            type={technique.type}
+            topic={topic?.name}
+            content={topic?.content}
+            revealed={summaryRevealed}
+            onReveal={() => setSummaryRevealed(true)}
+            techColor={techColor}
+          />
+        )}
+
         {/* ====== RESUMEN TEÓRICO ====== */}
         <div className="card bg-slate-900 border-slate-700">
           <h2 className="text-xl font-bold text-slate-100 mb-4 flex items-center gap-2 border-b border-slate-700 pb-3">
             📖 Resumen del Tema
           </h2>
-          {topic?.content ? (
+          {technique?.type === "active-recall" && !summaryRevealed ? (
+            <div className="text-center py-8">
+              <p className="text-slate-400 text-sm mb-3">🙈 Oculto mientras practicas Active Recall. Primero intenta recordar.</p>
+              <button onClick={() => setSummaryRevealed(true)} className="btn-secondary text-xs">Mostrar de todas formas</button>
+            </div>
+          ) : topic?.content ? (
             <div className="text-slate-300 text-sm leading-relaxed">
               <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
                 {topic.content}
@@ -149,7 +180,7 @@ export default function TopicDetail() {
         topicName={topic?.name} 
         techniqueName={technique?.title || "General"} 
         allTechniques={allTechniques} 
-        onTechniqueChange={setTechnique}
+        onTechniqueChange={changeTechnique}
         techColor={techColor}
         onExpandChange={setIsChatExpanded} // <-- Pasamos la función
       />

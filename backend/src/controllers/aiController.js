@@ -16,8 +16,10 @@ export const chatWithAI = async (req, res, next) => {
       Actualmente está aplicando la técnica de estudio: "${techniqueName}".
 
       Tu objetivo es guiarlo usando esa técnica específica. 
-      - Si es Feynman, pídele que te explique el concepto con sus propias palabras.
-      - Si es Active Recall, hazle preguntas cortas sobre el tema.
+      - Si es Feynman, pídele que te explique el concepto con sus propias palabras y señala los vacíos.
+      - Si es Active Recall, no le des la respuesta de inmediato: hazle preguntas cortas y deja que intente recordar.
+      - Si es Pomodoro, mantén respuestas breves y enfocadas en una sola tarea del bloque de 25 minutos.
+      - Si es Resolución de Problemas, guíalo por pasos (datos, plan, solución, verificación) sin resolverle todo.
       - Sé motivador, breve y usa un tono amigable.
       - Si usas matemáticas, usa formato Markdown y LaTeX (ejemplo: $x^2$ o $$\\int x dx$$).
     `;
@@ -127,5 +129,70 @@ export const generateCustomSession = async (req, res, next) => {
   } catch (error) {
     console.error("Error en IA custom:", error.message);
     next(new Error("Error al generar la sesión personalizada"));
+  }
+};
+
+// Llamada común a Groq (modelo openai/gpt-oss-120b)
+const callGroq = async (systemPrompt, userPrompt, maxTokens = 1200) => {
+  const response = await axios.post(
+    "https://api.groq.com/openai/v1/chat/completions",
+    {
+      model: "openai/gpt-oss-120b",
+      messages: [
+        { role: "system", content: systemPrompt },
+        { role: "user", content: userPrompt },
+      ],
+      temperature: 0.5,
+      max_tokens: maxTokens,
+    },
+    { headers: { Authorization: `Bearer ${process.env.GROQ_API_KEY}`, "Content-Type": "application/json" } }
+  );
+  return response.data.choices[0].message.content;
+};
+
+// @route   POST /api/auth/ai/technique
+// Actividades de práctica que dependen de la técnica elegida en el tema
+export const techniqueActivity = async (req, res, next) => {
+  try {
+    const { mode, topicName = "", topicContent = "", studentText = "", problemText = "" } = req.body;
+    const base = `Eres un tutor de UTEC para estudiantes de primer ciclo. Tema: "${topicName}".
+Resumen oficial del tema (úsalo como referencia de lo correcto):
+---
+${String(topicContent).slice(0, 4000)}
+---
+Responde en español, en Markdown, con toda expresión matemática entre signos de dólar ($...$). Sé breve y motivador.`;
+
+    const prompts = {
+      feynman: [
+        `${base}
+El estudiante aplicó la Técnica Feynman: explicó el tema con sus palabras. Evalúa su explicación con esta estructura:
+**Lo que explicaste bien** (2-3 viñetas), **Vacíos o errores** (2-3 viñetas, concretos), **Explicación más simple** (2-3 oraciones) y **Pregunta para seguir** (1 pregunta).`,
+        `Mi explicación:\n${String(studentText).slice(0, 3000)}`,
+      ],
+      recall: [
+        `${base}
+El estudiante aplica Active Recall. Genera 5 preguntas cortas de recuerdo sobre el tema, numeradas, de menor a mayor dificultad. Después agrega un encabezado "Respuestas" con respuestas breves, para que las revise solo al final.`,
+        "Genera mis preguntas de recuerdo.",
+      ],
+      problem: [
+        `${base}
+El estudiante aplica Resolución de Problemas. Plantea UN ejercicio tipo examen de dificultad media sobre el tema, con datos numéricos concretos. Muestra solo el enunciado: NO incluyas la solución.`,
+        "Dame un ejercicio.",
+      ],
+      "problem-check": [
+        `${base}
+Corrige la solución del estudiante al ejercicio dado. Indica si el resultado es correcto, en qué paso (Datos, Plan, Solución o Verificación) se equivocó si hubo error, y muestra la solución correcta paso a paso.`,
+        `Ejercicio:\n${String(problemText).slice(0, 2000)}\n\nMi solución:\n${String(studentText).slice(0, 3000)}`,
+      ],
+    };
+
+    const prompt = prompts[mode];
+    if (!prompt) return res.status(400).json({ message: "Modo de técnica no válido" });
+
+    const reply = await callGroq(prompt[0], prompt[1]);
+    res.json({ reply });
+  } catch (error) {
+    console.error("Error en IA técnica:", error.response?.data || error.message);
+    next(new Error("Error al generar la actividad de la técnica"));
   }
 };

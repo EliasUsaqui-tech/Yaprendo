@@ -1,6 +1,17 @@
 import Progress from "../models/Progress.js";
 import Topic from "../models/Topic.js";
 import Quiz from "../models/Quiz.js";
+import QuizAttempt from "../models/QuizAttempt.js";
+
+// Promedio de puntaje por técnica de estudio (evidencia de qué técnica le funciona al alumno)
+const getTechniqueStats = async (userId) => {
+  const rows = await QuizAttempt.aggregate([
+    { $match: { user: userId, technique: { $ne: "ninguna" } } },
+    { $group: { _id: "$technique", attempts: { $sum: 1 }, avgScore: { $avg: "$score" } } },
+    { $sort: { avgScore: -1 } },
+  ]);
+  return rows.map((r) => ({ technique: r._id, attempts: r.attempts, avgScore: Math.round(r.avgScore) }));
+};
 
 // GET /api/progress/me
 export const getMyProgress = async (req, res, next) => {
@@ -12,7 +23,7 @@ export const getMyProgress = async (req, res, next) => {
 
     // Si no tiene progreso, devolvemos vacío
     if (progressList.length === 0) {
-      return res.json({ coursesProgress: [] });
+      return res.json({ coursesProgress: [], techniqueStats: [] });
     }
 
     // 2. Agrupar por curso
@@ -55,7 +66,8 @@ export const getMyProgress = async (req, res, next) => {
       percentage: Math.round((c.dominados / c.totalQuizzes) * 100)
     }));
 
-    res.json({ coursesProgress });
+    const techniqueStats = await getTechniqueStats(req.user._id);
+    res.json({ coursesProgress, techniqueStats });
   } catch (error) {
     next(error);
   }

@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { techniqueService } from "../services/techniqueService";
 import { courseService } from "../services/courseService";
 import { useNavigate } from "react-router-dom";
+import { setActiveTechniqueType } from "../utils/technique";
 import Loader from "../components/common/Loader";
 
 export default function Techniques() {
@@ -42,13 +43,14 @@ export default function Techniques() {
   const handleApply = (courseId, courseName) => {
     localStorage.setItem("active_course", JSON.stringify({ id: courseId, name: courseName }));
     localStorage.setItem("active_technique", JSON.stringify(selectedTechnique));
+    setActiveTechniqueType(selectedTechnique?.type); // la técnica aplicada se usa en los temas del curso
     navigate(`/courses/${courseId}`);
   };
 
   if (loading) return <Loader />;
 
   // Lista de cursos bloqueados
-  const lockedCourses = ["CAL1", "FIS1"];
+  const lockedCourses = [];
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">

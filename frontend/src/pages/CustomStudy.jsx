@@ -7,6 +7,7 @@ import remarkGfm from "remark-gfm";
 import api from "../services/api";
 import pdfToText from "react-pdftotext";
 import rehypeRaw from "rehype-raw";
+import { getActiveTechniqueType } from "../utils/technique";
 
 export default function CustomStudy() {
   const [file, setFile] = useState(null);
@@ -34,7 +35,7 @@ export default function CustomStudy() {
   }, [ctx.topicId]);
 
   // 1. Obtenemos la técnica del test y la traducimos
-  const techFromTest = localStorage.getItem("recommended_technique");
+  const techFromTest = getActiveTechniqueType(); // misma técnica que usa el resto de la app
   
   const getTechniqueName = (tech) => {
     if (tech === "feynman") return "Feynman";

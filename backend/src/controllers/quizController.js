@@ -40,7 +40,8 @@ export const getQuizById = async (req, res, next) => {
 // POST /api/quizzes/:id/attempt
 export const submitAttempt = async (req, res, next) => {
   try {
-    const { answers } = req.body; // [{ questionId, selectedIndex }, ...]
+    const { answers, technique } = req.body; // [{ questionId, selectedIndex }, ...]
+    const validTechniques = ["feynman", "active-recall", "pomodoro", "problem-solving"];
     const quiz = await Quiz.findById(req.params.id);
     if (!quiz) return res.status(404).json({ message: "Quiz no encontrado" });
 
@@ -76,6 +77,7 @@ export const submitAttempt = async (req, res, next) => {
       score,
       totalQuestions: questions.length,
       correctAnswers: correctCount,
+      technique: validTechniques.includes(technique) ? technique : "ninguna",
     });
 
     // Actualizar progreso

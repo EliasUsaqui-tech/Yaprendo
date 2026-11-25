@@ -10,7 +10,7 @@ import {
 
 import { protect } from "../middleware/authMiddleware.js";
 
-import { chatWithAI, generateCustomSession } from "../controllers/aiController.js";
+import { chatWithAI, generateCustomSession, techniqueActivity } from "../controllers/aiController.js";
 
 const router = Router();
 
@@ -18,6 +18,7 @@ router.post("/register", register);
 router.post("/login", login);
 router.post("/ai/chat", protect, chatWithAI);
 router.post("/ai/custom-session", protect, generateCustomSession); // <-- NUEVA RUTA
+router.post("/ai/technique", protect, techniqueActivity); // práctica según la técnica elegida
 router.get("/me", protect, getMe);
 router.post("/forgot-password", forgotPassword);
 

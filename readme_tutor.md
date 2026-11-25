@@ -82,6 +82,12 @@ Mejoras implementadas a partir de la Ronda 01 de validación:
   * **Contactar mentor sobre este tema**: abre el directorio filtrado por curso y arma el correo al mentor con el tema y el puntaje.
 * **Ruta guiada**: Diagnóstico → Autoevaluación → Práctica o Mentor → Progreso.
 * **Cálculo 1** (16 semanas) y **Física 1** (14 semanas) desbloqueados, con resumen teórico y autoevaluación de 4 preguntas por semana (`backend/src/seeders/data/`).
+* **La técnica de estudio ahora cambia cómo se estudia cada tema**:
+  * **Feynman**: el alumno explica el tema con sus palabras y la IA señala aciertos y vacíos.
+  * **Active Recall**: el resumen se oculta hasta que el alumno escribe lo que recuerda; luego se autoevalúa y puede generar preguntas de recuerdo.
+  * **Pomodoro**: temporizador 25/5 dentro del tema, con conteo de ciclos.
+  * **Resolución de Problemas**: la IA genera un ejercicio tipo examen y corrige la solución por pasos.
+  * La técnica del test se usa por defecto en temas, Sesión Dinámica y Cachimbo Bot, y cada quiz guarda con qué técnica se estudió. **Progreso** muestra el rendimiento promedio por técnica.
 * Nuevo mentor demo: `carlos@utec.edu.pe / carlos123` (Física 1 y Cálculo 1).
 
 > Después de actualizar, ejecuta `npm run seed` en `backend` para cargar el contenido nuevo.

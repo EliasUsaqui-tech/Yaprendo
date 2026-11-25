@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { quizService } from "../services/quizService";
 import Loader from "../components/common/Loader";
+import { getActiveTechniqueType, TECHNIQUE_LABELS } from "../utils/technique";
 
 export default function Quiz() {
   const { id } = useParams();
@@ -29,7 +30,7 @@ export default function Quiz() {
     );
     setSubmitting(true);
     try {
-      const res = await quizService.submitAttempt(id, payload);
+      const res = await quizService.submitAttempt(id, payload, getActiveTechniqueType());
       setResult(res);
     } catch (err) {
       alert(err.response?.data?.message || "Error al enviar respuestas");
@@ -73,6 +74,9 @@ export default function Quiz() {
           </h1>
           <p className="text-slate-300">
             {result.correctAnswers} de {result.totalQuestions} correctas
+          </p>
+          <p className="text-xs text-slate-400 mt-1">
+            Técnica con la que estudiaste: <strong>{TECHNIQUE_LABELS[getActiveTechniqueType()]}</strong>
           </p>
           <p className="text-sm text-slate-400 mt-2">
             {passed

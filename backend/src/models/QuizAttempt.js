@@ -18,6 +18,12 @@ const quizAttemptSchema = new mongoose.Schema(
     totalQuestions: Number,
     correctAnswers: Number,
     completedAt: { type: Date, default: Date.now },
+    // Técnica con la que el estudiante preparó el tema (permite medir rendimiento por técnica)
+    technique: {
+      type: String,
+      enum: ["feynman", "active-recall", "pomodoro", "problem-solving", "ninguna"],
+      default: "ninguna",
+    },
   },
   { timestamps: true }
 );
