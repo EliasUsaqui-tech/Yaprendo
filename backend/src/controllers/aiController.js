@@ -196,3 +196,62 @@ Corrige la solución del estudiante al ejercicio dado. Indica si el resultado es
     next(new Error("Error al generar la actividad de la técnica"));
   }
 };
+
+// Extrae el primer objeto JSON de una respuesta del modelo (puede venir con texto o ``` alrededor)
+const parseJsonObject = (text) => {
+  const start = text.indexOf("{");
+  const end = text.lastIndexOf("}");
+  if (start === -1 || end <= start) throw new Error("La IA no devolvió JSON");
+  return JSON.parse(text.slice(start, end + 1));
+};
+
+// @route   POST /api/auth/ai/material-quiz
+// Autoevaluación generada a partir del material del propio estudiante (cualquier curso)
+export const materialQuiz = async (req, res, next) => {
+  try {
+    const { materialText = "", subject = "" } = req.body;
+    if (String(materialText).trim().length < 50) {
+      return res.status(400).json({ message: "El material no tiene suficiente texto" });
+    }
+
+    const system = `Eres un docente universitario que prepara autoevaluaciones para estudiantes de primer ciclo.
+Crea EXACTAMENTE 5 preguntas de opción múltiple basadas ÚNICAMENTE en el material dado${subject ? ` (curso o tema: "${subject}")` : ""}.
+Reglas:
+- Cada pregunta tiene 4 opciones y solo una correcta; distractores plausibles.
+- Mezcla comprensión de conceptos y aplicación (cálculos sencillos si el material los tiene).
+- Varía la posición de la respuesta correcta.
+- Expresiones matemáticas entre signos de dólar ($...$).
+- Explicación breve (1-2 oraciones) de por qué la respuesta es correcta.
+Responde SOLO con JSON válido, sin texto adicional, con esta forma:
+{"questions":[{"statement":"...","options":["...","...","...","..."],"correctIndex":0,"explanation":"..."}]}`;
+
+    const raw = await callGroq(system, `MATERIAL:\n${String(materialText).slice(0, 12000)}`, 2500);
+    const parsed = parseJsonObject(raw);
+
+    // Validación: descartamos preguntas mal formadas en lugar de mostrarlas rotas
+    const questions = (parsed.questions || [])
+      .filter(
+        (q) =>
+          q &&
+          typeof q.statement === "string" &&
+          Array.isArray(q.options) &&
+          q.options.length === 4 &&
+          Number.isInteger(q.correctIndex) &&
+          q.correctIndex >= 0 &&
+          q.correctIndex < 4
+      )
+      .slice(0, 5)
+      .map((q) => ({
+        statement: q.statement,
+        options: q.options.map(String),
+        correctIndex: q.correctIndex,
+        explanation: String(q.explanation || ""),
+      }));
+
+    if (questions.length < 3) throw new Error("Preguntas insuficientes");
+    res.json({ questions });
+  } catch (error) {
+    console.error("Error en quiz de material:", error.response?.data || error.message);
+    next(new Error("Error al generar la autoevaluación del material"));
+  }
+};

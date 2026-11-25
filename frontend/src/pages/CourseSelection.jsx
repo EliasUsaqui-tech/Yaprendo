@@ -34,9 +34,19 @@ export default function CourseSelection() {
       <h1 className="text-2xl font-bold text-slate-100 mb-1">
         Selecciona tu curso
       </h1>
-      <p className="text-slate-400 mb-6">
-        Elige el curso filtro que estás llevando este ciclo.
+      <p className="text-slate-400 mb-4">
+        Elige el curso filtro que estás llevando este ciclo. Estos cursos piloto tienen resúmenes y autoevaluaciones por semana.
       </p>
+
+      {/* La ruta de estudio no depende del curso: con material propio funciona para cualquiera */}
+      <div className="card bg-slate-900 border-slate-700 mb-6 flex flex-col md:flex-row md:items-center justify-between gap-3">
+        <p className="text-sm text-slate-300">
+          <strong>¿Tu curso no está en la lista?</strong> Sube el PDF de tu clase: lo estudias con tu técnica y te autoevalúas con preguntas creadas de tu propio material.
+        </p>
+        <button onClick={() => navigate("/custom-study")} className="btn-secondary text-sm whitespace-nowrap">
+          Usar mi material
+        </button>
+      </div>
 
       {/* Usamos un flex en lugar de grid para controlar el orden mejor */}
       <div className="flex flex-wrap gap-4">

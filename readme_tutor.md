@@ -88,6 +88,7 @@ Mejoras implementadas a partir de la Ronda 01 de validación:
   * **Pomodoro**: temporizador 25/5 dentro del tema, con conteo de ciclos.
   * **Resolución de Problemas**: la IA genera un ejercicio tipo examen y corrige la solución por pasos.
   * La técnica del test se usa por defecto en temas, Sesión Dinámica y Cachimbo Bot, y cada quiz guarda con qué técnica se estudió. **Progreso** muestra el rendimiento promedio por técnica.
+* **Ruta completa con cualquier curso**: en Mi Sesión Dinámica el estudiante sube el PDF de su clase, lo estudia con su técnica y se autoevalúa con 5 preguntas que la IA crea a partir de ese material (`POST /api/auth/ai/material-quiz`). El resultado lleva al mismo panel de siguiente paso (practicar o mentor). Los tres cursos con contenido propio funcionan como piloto.
 * Nuevo mentor demo: `carlos@utec.edu.pe / carlos123` (Física 1 y Cálculo 1).
 
 > Después de actualizar, ejecuta `npm run seed` en `backend` para cargar el contenido nuevo.
