@@ -41,6 +41,13 @@ const seedCourseContent = async (course, weeks) => {
 };
 
 const run = async () => {
+  // Protección: el seed borra y recrea cursos, temas y quizzes. No correrlo contra producción por accidente.
+  const uri = process.env.MONGO_URI || "";
+  if (!/127\.0\.0\.1|localhost/.test(uri) && !process.argv.includes("--force")) {
+    console.error("⚠️  MONGO_URI no apunta a una base local. El seed borraría cursos, temas y quizzes de esa base.");
+    console.error("    Si de verdad quieres hacerlo, ejecuta: npm run seed -- --force");
+    process.exit(1);
+  }
   await connectDB();
 
   console.log("Limpiando cursos, temas, técnicas y quizzes...");

@@ -17,9 +17,12 @@ const getTechniqueStats = async (userId) => {
 export const getMyProgress = async (req, res, next) => {
   try {
     // 1. Buscamos todos los registros de progreso de este usuario
-    const progressList = await Progress.find({ user: req.user._id })
+    const rawProgress = await Progress.find({ user: req.user._id })
       .populate("course", "name code")
       .populate("topic", "name");
+
+    // Ignoramos registros cuyo curso o tema ya no existe (p. ej. tras volver a correr el seed)
+    const progressList = rawProgress.filter((p) => p.course && p.topic);
 
     // Si no tiene progreso, devolvemos vacío
     if (progressList.length === 0) {
